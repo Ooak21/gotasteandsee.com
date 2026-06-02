@@ -434,6 +434,47 @@
     }
     .igfeed-track::-webkit-scrollbar { display: none; }
 
+    /* Shelf navigation arrows – obvious left/right controls for horizontal feeds */
+    .shelf-arrows {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 12px;
+      pointer-events: none;
+      z-index: 10;
+      transform: translateY(-50%);
+    }
+    .shelf-arrow {
+      pointer-events: auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 9999px;
+      background: rgba(10,9,8,0.85);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--cream);
+      font-size: 20px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+    }
+    .shelf-arrow:hover {
+      background: var(--lime);
+      color: #0A0908;
+      border-color: var(--lime);
+      transform: scale(1.05);
+    }
+    .reel, .igfeed {
+      position: relative;
+    }
+
     .ig-card {
       flex: 0 0 auto;
       width: clamp(200px, 22vw, 280px);
@@ -864,6 +905,80 @@
       }
       footer a { margin-right: 14px; }
     }
+
+    /* ===== GoTaste small music player (inspired by 3DBrothers floating player) ===== */
+    .gt-music {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 999;
+    }
+    .gt-play {
+      appearance: none;
+      background: rgba(10,9,8,0.92);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--cream);
+      padding: 6px 14px 6px 10px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      transition: all 0.2s ease;
+    }
+    .gt-play:hover {
+      border-color: var(--lime);
+      transform: translateY(-1px);
+    }
+    .gt-icon {
+      width: 22px;
+      height: 22px;
+      background: var(--lime);
+      color: #0A0908;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      line-height: 1;
+    }
+    .gt-play.playing .gt-icon {
+      background: var(--blue);
+    }
+    .gt-label {
+      font-weight: 600;
+    }
+    .gt-bars {
+      display: none;
+      align-items: flex-end;
+      gap: 2px;
+      height: 12px;
+    }
+    .gt-play.playing .gt-bars {
+      display: flex;
+    }
+    .gt-bars span {
+      width: 2.5px;
+      background: var(--lime);
+      height: 100%;
+      transform-origin: bottom;
+      animation: gt-eq 900ms ease-in-out infinite;
+    }
+    .gt-bars span:nth-child(2) { animation-delay: 160ms; }
+    .gt-bars span:nth-child(3) { animation-delay: 320ms; }
+    @keyframes gt-eq {
+      0%, 100% { transform: scaleY(0.35); }
+      50% { transform: scaleY(1); }
+    }
+    @media (max-width: 600px) {
+      .gt-music { right: 14px; bottom: 14px; }
+      .gt-play { font-size: 11px; padding: 5px 11px 5px 8px; }
+      .gt-icon { width: 20px; height: 20px; font-size: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -920,6 +1035,12 @@
     <div class="reel-header">
       <h2>From <em>the channel</em></h2>
     </div>
+
+    <div class="shelf-arrows" aria-hidden="true">
+      <button class="shelf-arrow reel-prev" type="button" aria-label="Scroll videos left">‹</button>
+      <button class="shelf-arrow reel-next" type="button" aria-label="Scroll videos right">›</button>
+    </div>
+
     <div class="reel-track">
 
       <a class="reel-card" href="https://www.youtube.com/watch?v=k3h05v-WlsE" target="_blank" rel="noopener">
@@ -969,7 +1090,45 @@
     <div class="igfeed-header">
       <h2>On <em>Instagram</em></h2>
     </div>
+
+    <div class="shelf-arrows" aria-hidden="true">
+      <button class="shelf-arrow ig-prev" type="button" aria-label="Scroll Instagram left">‹</button>
+      <button class="shelf-arrow ig-next" type="button" aria-label="Scroll Instagram right">›</button>
+    </div>
+
     <div class="igfeed-track">
+      <a class="ig-card" href="https://www.instagram.com/p/" target="_blank" rel="noopener">
+        <div class="ig-thumb">
+          <img src="https://picsum.photos/id/1016/400/400" alt="Crispy duck confit with cherry mostarda">
+        </div>
+        <div class="ig-title">Crispy duck confit, cherry mostarda, toasted brioche.</div>
+        <div class="ig-meta">Las Vegas • 3d</div>
+      </a>
+
+      <a class="ig-card" href="https://www.instagram.com/p/" target="_blank" rel="noopener">
+        <div class="ig-thumb">
+          <img src="https://picsum.photos/id/106/400/400" alt="Handmade pasta with brown butter and sage">
+        </div>
+        <div class="ig-title">Fresh tagliatelle, brown butter, crispy sage.</div>
+        <div class="ig-meta">Arts District • 1w</div>
+      </a>
+
+      <a class="ig-card" href="https://www.instagram.com/p/" target="_blank" rel="noopener">
+        <div class="ig-thumb">
+          <img src="https://picsum.photos/id/312/400/400" alt="Wood-fired pizza with local mushrooms">
+        </div>
+        <div class="ig-title">Wood-fired mushrooms, stracciatella, chili honey.</div>
+        <div class="ig-meta">Summerlin • 2w</div>
+      </a>
+
+      <a class="ig-card" href="https://www.instagram.com/p/" target="_blank" rel="noopener">
+        <div class="ig-thumb">
+          <img src="https://picsum.photos/id/292/400/400" alt="Seared scallops with corn and chili">
+        </div>
+        <div class="ig-title">Seared scallops, corn purée, pickled chili.</div>
+        <div class="ig-meta">Downtown • 3w</div>
+      </a>
+
       <a class="ig-card ig-card-end" href="https://instagram.com/gotasteandsee" target="_blank" rel="noopener">
         <div class="ig-thumb">
           <span class="ig-end-label">See all<br/>on Instagram &rarr;</span>
@@ -1418,6 +1577,84 @@
         submitBtn.textContent = 'Send';
       }
     });
+  </script>
+
+  <!-- Shelf scroll controls for YouTube + Instagram horizontal feeds -->
+  <script>
+    (function() {
+      function setupShelf(trackSelector, prevSelector, nextSelector) {
+        const track = document.querySelector(trackSelector);
+        const prev = document.querySelector(prevSelector);
+        const next = document.querySelector(nextSelector);
+        if (!track || !prev || !next) return;
+
+        const scrollAmount = () => {
+          const card = track.querySelector('a');
+          return card ? card.offsetWidth + 28 : 320; // gap is ~28px
+        };
+
+        prev.addEventListener('click', () => {
+          track.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+        });
+
+        next.addEventListener('click', () => {
+          track.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+        });
+
+        // Optional: hide arrows if not scrollable (basic)
+        function updateArrows() {
+          const canScrollLeft = track.scrollLeft > 10;
+          const canScrollRight = track.scrollLeft + track.clientWidth < track.scrollWidth - 10;
+          prev.style.opacity = canScrollLeft ? '1' : '0.35';
+          next.style.opacity = canScrollRight ? '1' : '0.35';
+        }
+        track.addEventListener('scroll', updateArrows);
+        window.addEventListener('resize', updateArrows);
+        setTimeout(updateArrows, 400);
+      }
+
+      setupShelf('.reel-track', '.reel-prev', '.reel-next');
+      setupShelf('.igfeed-track', '.ig-prev', '.ig-next');
+    })();
+  </script>
+
+  <!-- GoTaste Soundtrack Player (small floating, inspired by 3DBrothers) -->
+  <audio id="gtAudio" src="./gotaste-track.mp3" preload="metadata"></audio>
+
+  <div class="gt-music">
+    <button id="gtPlay" class="gt-play" aria-label="Play soundtrack">
+      <span class="gt-icon">▶</span>
+      <span class="gt-label">SOUND</span>
+      <span class="gt-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+    </button>
+  </div>
+
+  <script>
+    (function(){
+      const audio = document.getElementById('gtAudio');
+      const btn = document.getElementById('gtPlay');
+      if (!audio || !btn) return;
+
+      audio.volume = 0.82;
+
+      btn.addEventListener('click', function(){
+        if (audio.paused) {
+          const p = audio.play();
+          if (p && p.catch) p.catch(function(){});
+          btn.classList.add('playing');
+          btn.querySelector('.gt-icon').textContent = '❚❚';
+        } else {
+          audio.pause();
+          btn.classList.remove('playing');
+          btn.querySelector('.gt-icon').textContent = '▶';
+        }
+      });
+
+      audio.addEventListener('ended', function(){
+        btn.classList.remove('playing');
+        btn.querySelector('.gt-icon').textContent = '▶';
+      });
+    })();
   </script>
 </body>
 </html>
