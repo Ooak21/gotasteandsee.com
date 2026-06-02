@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Go Taste and See · Jennifer Allen</title>
   <meta name="description" content="Food is a portal. Jennifer Allen on YouTube, Instagram, and TikTok." />
   <link rel="icon" href="./logo.png" />
@@ -860,8 +863,16 @@
       .hero-sticky { position: relative; height: 100vh; }
       .hero-bg { display: none; }
       .hero-bg-fallback {
-        background-size: cover;
-        background-position: center 38%;
+        background-size: contain;
+        background-position: center;
+        background-color: #050609;
+      }
+      /* Loader uses hero-bg.png too — match mobile sizing so it doesn't look
+         like a different oversized crop than the hero behind it. */
+      .loader {
+        background-size: contain;
+        background-position: center;
+        background-color: #050609;
       }
       .hero-scroll { display: none; }
       .hero-tag {
@@ -1440,6 +1451,10 @@
       // Tag is normally revealed by scroll progress. On mobile we show it
       // immediately as the static hero's permanent state.
       heroTag.classList.add('show');
+      // No video to wait for — dismiss the loader after the min visible time
+      // (1.2s) so the user can scroll instead of waiting on maybeFinishLoader
+      // to time out at LOADER_MAX_MS. Guarded by loaderDismissed flag inside.
+      setTimeout(function(){ dismissLoader(); }, LOADER_MIN_MS);
     }
 
     // Prime the video so the first frame renders (some mobile browsers won't
