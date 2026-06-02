@@ -1,0 +1,1423 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Go Taste and See · Jennifer Allen</title>
+  <meta name="description" content="Food is a portal. Jennifer Allen on YouTube, Instagram, and TikTok." />
+  <link rel="icon" href="./logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0A0908;        /* page bg, deep with a hint of warmth */
+      --surface:   #13110E;        /* lifted sections (manifesto, hello) */
+      --cream:     #fff;           /* was cream, all text now pure white */
+      --text-dim:  #fff;           /* was softened cream, now white */
+      --muted:     #8B8478;
+      --line:      rgba(255,255,255,.08);
+      --blue:      #1789DB;
+      --blue-dk:   #0F6DB3;
+      --lime:      #B8D138;
+      --terra:     #B8460E;
+      --ink:       #1B1916;        /* retained for legacy refs */
+      --chalk:     #fff;           /* was whitish-gray, now pure white per spec */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--cream);
+      font-family: 'Inter', -apple-system, 'SF Pro Text', system-ui, sans-serif;
+      font-size: 17px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body {
+      background-image:
+        radial-gradient(ellipse 80% 60% at 20% 0%,  rgba(184,209,56,.05), transparent 60%),
+        radial-gradient(ellipse 70% 50% at 90% 100%, rgba(23,137,219,.05), transparent 60%);
+      background-attachment: fixed;
+    }
+    a { color: inherit; }
+    ::selection { background: var(--lime); color: var(--ink); }
+
+    /* Chalkboy: hand-drawn chalk font used for the menu titles on the
+       chalkboard board. Local file so it doesn't depend on a CDN. */
+    @font-face {
+      font-family: 'Chalkboy';
+      src: url('./Chalkboy.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    /* Vintage Diner: retro signage font for the brand wordmark and the
+       hero tagline. Local file. */
+    @font-face {
+      font-family: 'Vintage Diner';
+      src: url('./VintageDiner.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    /* Funky Foodie Doodie: playful display font for content section
+       headers ("From the channel", "A passport, with cutlery"). */
+    @font-face {
+      font-family: 'Funky Foodie Doodie';
+      src: url('./FunkyFoodieDoodie.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ---------- loader (brand moment, gates the scroll-scrub) ---------- */
+    /* The loader uses the static hero composition as its background so the
+       transition into the video's first frame is seamless. */
+    body.locked { overflow: hidden; }
+    .loader {
+      position: fixed; inset: 0;
+      z-index: 100;
+      background: #050609 url('./hero-bg.png') center 45% / cover no-repeat;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: opacity .8s ease;
+    }
+    .loader.hide { opacity: 0; pointer-events: none; }
+    .loader-cue {
+      position: absolute;
+      bottom: clamp(64px, 9vh, 110px);
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(13px, 1.4vw, 16px);
+      letter-spacing: .36em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.92);
+      font-weight: 700;
+      display: flex; align-items: center; gap: 22px;
+      text-shadow: 0 2px 16px rgba(0,0,0,.7);
+      opacity: 0;
+      animation: cue-fade-in .9s ease .25s forwards;
+    }
+    @keyframes cue-fade-in { to { opacity: 1; } }
+    .loader-bar {
+      width: clamp(180px, 22vw, 280px);
+      height: 4px;
+      background: rgba(255,255,255,.22);
+      border-radius: 2px;
+      position: relative; overflow: hidden;
+      box-shadow: 0 2px 14px rgba(0,0,0,.5);
+    }
+    .loader-bar::after {
+      content: '';
+      position: absolute; left: 0; top: 0; height: 100%;
+      width: 38%;
+      background: var(--lime);
+      border-radius: 2px;
+      animation: loader-slide 1.4s ease-in-out infinite;
+    }
+    @keyframes loader-slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(260%);  }
+    }
+
+    /* ---------- top nav ---------- */
+    nav.top {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 36px;
+      z-index: 20;
+      pointer-events: none;
+      transition: background-color .35s ease;
+    }
+    nav.top > * { pointer-events: auto; }
+    .brandmark { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brandmark-text {
+      font-family: 'Funky Foodie Doodie', 'Fraunces', Georgia, serif;
+      font-size: 26px; font-weight: 400;
+      letter-spacing: 0;
+      color: rgba(255,255,255,.96);
+      text-shadow: 0 2px 14px rgba(0,0,0,.55);
+      transition: color .3s, text-shadow .3s;
+    }
+    nav .anchor {
+      font-family: 'Funky Foodie Doodie', 'Fraunces', Georgia, serif;
+      font-size: 22px; letter-spacing: 0;
+      text-decoration: none; font-weight: 400;
+      color: rgba(255,255,255,.96);
+      text-shadow: 0 2px 14px rgba(0,0,0,.55);
+      transition: color .3s, text-shadow .3s;
+    }
+    /* state once user scrolls past the hero: subtle dark glass over content */
+    nav.top.scrolled {
+      background: rgba(10,9,8,.78);
+    }
+    nav.top.scrolled .brandmark-text,
+    nav.top.scrolled .anchor {
+      color: var(--cream);
+      text-shadow: none;
+    }
+    nav.top.scrolled .anchor:hover { color: var(--lime); }
+
+    /* ---------- hero ---------- */
+    .hero {
+      position: relative;
+      height: 300vh;             /* outer scroll range. 200vh of it is the scrub window. */
+      background: #050609;
+    }
+    .hero-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 45%;
+      display: block;
+      background: #050609;
+    }
+    /* Static-image fallback if the video fails to load or is disabled */
+    .hero-bg-fallback {
+      position: absolute; inset: 0;
+      background-image: url('./hero-bg.png');
+      background-size: cover;
+      background-position: center 45%;
+      background-repeat: no-repeat;
+      z-index: 0;
+    }
+    /* very gentle vignette so the bottom edge and the tag have something to read against */
+    .hero-vignette {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 45%, transparent 50%, rgba(0,0,0,.35) 100%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      font-family: 'Vintage Diner', 'Fraunces', Georgia, serif;
+      font-style: normal; font-weight: 400;
+      font-size: clamp(26px, 3.4vw, 42px);
+      letter-spacing: .02em;
+      color: var(--cream);
+      text-shadow: 0 2px 14px rgba(0,0,0,.65), 0 1px 3px rgba(0,0,0,.45);
+      white-space: nowrap;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1);
+      pointer-events: none;
+    }
+    .hero-tag.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px; letter-spacing: .32em; text-transform: uppercase;
+      color: rgba(255,255,255,.55); font-weight: 700;
+      z-index: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .hero-scroll-dot {
+      width: 2px; height: 28px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.55), transparent);
+      animation: scroll-pulse 2.4s ease-in-out infinite;
+      transform-origin: top;
+    }
+    @keyframes scroll-pulse {
+      0%, 100% { transform: scaleY(.6); opacity: .35; }
+      50%      { transform: scaleY(1);  opacity: 1;   }
+    }
+
+    /* ---------- manifesto ---------- */
+    /* Banner image on top at natural aspect (no crop, no cover-zoom).
+       Manifesto text below in the dark void. */
+    .manifesto {
+      position: relative;
+      background:
+        linear-gradient(rgba(10,9,8,.40), rgba(10,9,8,.50)),
+        url('./manifesto-void-bg.jpg') center center / cover no-repeat fixed,
+        var(--bg);
+      padding: 0;
+    }
+    .manifesto-banner {
+      width: 100%;
+      aspect-ratio: 1060 / 175;
+      background: url('./manifesto-bg.jpg') center center / cover no-repeat;
+    }
+    .manifesto-inner {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 110px 8vw 140px;
+    }
+    .manifesto-body {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(28px, 3.6vw, 46px); line-height: 1.22;
+      font-weight: 400;
+      color: #fff;
+    }
+    .manifesto-body p { margin: 0 0 28px; }
+    .manifesto-body p:last-child { margin-bottom: 0; }
+    .manifesto-body em { font-style: italic; color: var(--lime); }
+    /* Two-marker highlight: a green swipe + a white swipe stacked
+       slightly off-register, with blue text on top. Reads like a menu
+       got hit by two highlighters back-to-back. */
+    .highlight {
+      position: relative;
+      display: inline-block;
+      color: var(--blue);
+      font-weight: 700;
+      padding: 0 .25em;
+      isolation: isolate;
+    }
+    .highlight::before {
+      /* lime base layer — extends bottom + left */
+      content: '';
+      position: absolute;
+      inset: 22% -.12em -.08em -.18em;
+      background: var(--lime);
+      z-index: -2;
+      transform: rotate(-1.2deg);
+    }
+    .highlight::after {
+      /* white layer offset up + right, sits over the green */
+      content: '';
+      position: absolute;
+      inset: 8% -.22em .14em -.04em;
+      background: #fff;
+      z-index: -1;
+      transform: rotate(1.1deg);
+    }
+
+    /* ---------- reel: YouTube videos shelf ---------- */
+    .reel {
+      padding: 100px 0 90px;
+      background: var(--bg);
+      position: relative;
+    }
+    .reel-header {
+      padding: 0 8vw;
+      margin-bottom: 52px;
+      max-width: 1080px;
+    }
+    .reel-eyebrow {
+      font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--blue); font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .reel h2 {
+      font-family: 'Funky Foodie Doodie', 'Fraunces', Georgia, serif;
+      font-size: clamp(44px, 6vw, 78px);
+      line-height: 1; font-weight: 400;
+      letter-spacing: 0;
+      margin: 0;
+      color: var(--cream);
+    }
+    .reel h2 em { font-style: normal; color: var(--lime); }
+
+    .reel-track {
+      display: flex;
+      gap: 28px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x proximity;
+      scroll-padding-left: 8vw;
+      padding: 6px 8vw 32px;
+      scrollbar-width: none;
+    }
+    .reel-track::-webkit-scrollbar { display: none; }
+
+    .reel-card {
+      flex: 0 0 auto;
+      width: clamp(260px, 26vw, 340px);
+      text-decoration: none;
+      color: var(--cream);
+      scroll-snap-align: start;
+      transition: transform .25s ease;
+    }
+    .reel-card:hover { transform: translateY(-4px); }
+
+    .reel-thumb {
+      position: relative;
+      aspect-ratio: 16/9;
+      border-radius: 6px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1B1916 0%, #0A0908 100%);
+      margin-bottom: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    /* subtle per-card tint keeps the shelf from feeling repetitive */
+    .reel-card:nth-child(2) .reel-thumb { background: linear-gradient(135deg, #1B1916 0%, #2A1814 100%); }
+    .reel-card:nth-child(3) .reel-thumb { background: linear-gradient(135deg, #0F1A17 0%, #1B1916 100%); }
+    .reel-card:nth-child(4) .reel-thumb { background: linear-gradient(135deg, #1B1916 0%, #13191E 100%); }
+    .reel-dur {
+      position: absolute;
+      bottom: 8px; right: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      background: rgba(10,9,8,.85);
+      color: var(--cream);
+      padding: 3px 7px;
+      border-radius: 3px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .reel-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 18px; line-height: 1.28;
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      color: var(--cream);
+    }
+    .reel-meta {
+      font-size: 13px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .reel-card-end .reel-thumb {
+      background: linear-gradient(135deg, rgba(23,137,219,.18) 0%, rgba(184,209,56,.10) 100%);
+    }
+    .reel-card-end .reel-thumb::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(184,209,56,.10), transparent 70%);
+    }
+    .reel-end-label {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 20px; font-style: italic; font-weight: 500;
+      color: var(--cream);
+      text-align: center;
+      line-height: 1.3;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ---------- Instagram feed shelf ---------- */
+    .igfeed {
+      padding: 30px 0 90px;
+      background: var(--bg);
+    }
+    .igfeed-header {
+      padding: 0 8vw;
+      margin-bottom: 44px;
+      max-width: 1080px;
+    }
+    .igfeed h2 {
+      font-family: 'Funky Foodie Doodie', 'Fraunces', Georgia, serif;
+      font-size: clamp(40px, 5.4vw, 70px);
+      line-height: 1; font-weight: 400;
+      letter-spacing: 0;
+      margin: 0;
+      color: var(--cream);
+    }
+    .igfeed h2 em { font-style: normal; color: var(--lime); }
+
+    .igfeed-track {
+      display: flex; gap: 18px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x proximity;
+      scroll-padding-left: 8vw;
+      padding: 6px 8vw 28px;
+      scrollbar-width: none;
+    }
+    .igfeed-track::-webkit-scrollbar { display: none; }
+
+    .ig-card {
+      flex: 0 0 auto;
+      width: clamp(200px, 22vw, 280px);
+      text-decoration: none;
+      color: var(--cream);
+      scroll-snap-align: start;
+      transition: transform .25s ease;
+    }
+    .ig-card:hover { transform: translateY(-4px); }
+
+    .ig-thumb {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1B1916 0%, #0A0908 100%);
+      position: relative;
+    }
+    .ig-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .ig-card-end .ig-thumb {
+      background: linear-gradient(135deg, rgba(184,209,56,.16) 0%, rgba(23,137,219,.18) 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ig-end-label {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 19px; font-style: italic; font-weight: 500;
+      color: var(--cream);
+      text-align: center; line-height: 1.3;
+      padding: 0 14px;
+    }
+
+    /* ---------- smoke zone: shared video bg behind Today's Menu + Passport ---------- */
+    /* Looping smoke video as the background of both sections. The video
+       is absolutely-positioned inside the zone so it fills the entire
+       background without affecting layout flow. The chalkboard menu and
+       the channel pull-out sit on top via z-index. */
+    .smoke-zone {
+      position: relative;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .smoke-video-wrap {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .smoke-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center bottom;
+      display: block;
+    }
+    .smoke-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(10,9,8,.45), rgba(10,9,8,.55));
+      pointer-events: none;
+    }
+    .smoke-zone .find,
+    .smoke-zone .channel {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ---------- the menu (formerly "follow along") ---------- */
+    .find {
+      padding: 120px 8vw 110px;
+      background: transparent;
+    }
+    .find-eyebrow {
+      font-family: 'Chalkboy', 'Fraunces', Georgia, serif;
+      font-size: clamp(30px, 3.4vw, 48px);
+      font-weight: 400;
+      letter-spacing: .02em;
+      color: var(--chalk);
+      text-align: center;
+      margin: 0 auto 28px;
+      line-height: 1;
+    }
+
+    /* Chalkboard frame holding the menu. Aspect-ratio matches the source
+       image so the decorative border doesn't distort or get cropped. */
+    .menu-board {
+      max-width: 640px;
+      margin: 0 auto;
+      aspect-ratio: 517 / 612;
+      background: url('./menu-chalkboard.jpg') center / 100% 100% no-repeat;
+      padding: 16% 14% 16%;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+
+    .menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      text-align: center;
+    }
+    .menu-item { margin-bottom: 26px; }
+    .menu-item:last-child { margin-bottom: 0; }
+
+    .menu-link {
+      display: block;
+      text-decoration: none;
+      color: var(--chalk);
+      transition: color .2s;
+    }
+    .menu-link:hover { color: var(--lime); }
+
+    .menu-line {
+      display: block;
+    }
+    .menu-name {
+      display: block;
+      font-family: 'Chalkboy', 'Fraunces', Georgia, serif;
+      font-size: clamp(30px, 3.2vw, 46px);
+      font-weight: 400; font-style: normal;
+      letter-spacing: .01em;
+      line-height: 1.05;
+      margin-bottom: 4px;
+      color: var(--chalk);
+    }
+    .menu-leader { display: none; }
+    .menu-handle {
+      display: block;
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(14px, 1.25vw, 18px);
+      font-style: italic; font-weight: 400;
+      color: var(--chalk);
+      opacity: .82;
+      line-height: 1.3;
+    }
+    .menu-link:hover .menu-handle { color: var(--lime); opacity: 1; }
+
+    .menu-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      letter-spacing: .04em;
+      color: var(--chalk);
+      opacity: .68;
+      margin-top: 6px;
+      padding-left: 0;
+    }
+
+    /* ---------- channel ---------- */
+    .channel {
+      padding: 100px 8vw 140px;
+      background: transparent;
+    }
+    .channel-inner {
+      max-width: 1080px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .channel-eyebrow {
+      font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--blue); font-weight: 700;
+      margin-bottom: 22px;
+    }
+    .channel-text h2 {
+      font-family: 'Funky Foodie Doodie', 'Fraunces', Georgia, serif;
+      font-size: clamp(48px, 6.8vw, 88px); line-height: 1;
+      font-weight: 400; letter-spacing: 0;
+      margin: 0 0 28px;
+      color: #fff;
+    }
+    .channel-text h2 em { font-style: normal; color: var(--lime); }
+    .channel-text p {
+      font-size: 17px; line-height: 1.65; max-width: 480px;
+      color: #fff; margin: 0 0 36px;
+    }
+    /* Buttons share one style: solid lime fill, dark ink text, hard
+       offset shadow. Funky Foodie Doodie type to match the section titles. */
+    .channel-cta,
+    .submit {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: 'Funky Foodie Doodie', 'Vintage Diner', 'Fraunces', Georgia, serif;
+      font-size: clamp(22px, 2.2vw, 30px);
+      font-weight: 400; font-style: normal;
+      letter-spacing: 0;
+      color: var(--ink);
+      background: var(--lime);
+      text-decoration: none;
+      border: none;
+      padding: 16px 32px 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 rgba(10,9,8,.85);
+      transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+    }
+    .channel-cta:hover,
+    .submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 rgba(10,9,8,.85);
+      background: var(--blue);
+      color: var(--cream);
+    }
+    .channel-cta:active,
+    .submit:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 0 0 0 rgba(10,9,8,.85);
+    }
+    .channel-stats {
+      font-family: 'Fraunces', Georgia, serif;
+      display: flex; gap: 56px; align-items: flex-start;
+    }
+    .channel-stats > div {
+      font-size: 14px;
+      color: #fff;
+      text-align: center;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .channel-stats strong {
+      display: block;
+      font-weight: 600;
+      font-size: clamp(48px, 6vw, 84px);
+      color: #fff;
+      letter-spacing: -.025em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    /* ---------- say hello ---------- */
+    .hello {
+      background: var(--surface);
+      padding: 140px 8vw 160px;
+    }
+    .hello-inner { max-width: 720px; margin: 0 auto; }
+    .hello-eyebrow {
+      font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--blue); font-weight: 700;
+      margin-bottom: 22px;
+    }
+    .hello h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(52px, 7.5vw, 104px);
+      line-height: .98; font-weight: 600;
+      letter-spacing: -.028em;
+      margin: 0 0 22px;
+      color: #fff;
+    }
+    .hello h2 em { font-style: italic; color: var(--lime); }
+    .hello p.lede {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(20px, 2.2vw, 26px);
+      font-style: italic; font-weight: 400;
+      line-height: 1.42;
+      max-width: 520px; margin: 0 0 64px;
+      color: #fff;
+    }
+
+    form.intake { display: block; }
+    .field { display: flex; flex-direction: column; margin-bottom: 30px; }
+    .field label {
+      font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+      color: #fff; font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .field input,
+    .field textarea,
+    .field select {
+      font-family: inherit; font-size: 18px;
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid rgba(255,255,255,.30);
+      padding: 10px 0 12px;
+      color: #fff;
+      transition: border-color .15s;
+      width: 100%;
+    }
+    .field input::placeholder,
+    .field textarea::placeholder { color: var(--muted); }
+    .field select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 24px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23ffffff' stroke-width='1.5' fill='none'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 4px center;
+      cursor: pointer;
+    }
+    .field select option { background: var(--surface); color: #fff; }
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      outline: none;
+      border-bottom-color: var(--blue);
+    }
+    .field textarea {
+      resize: vertical;
+      min-height: 110px;
+      line-height: 1.5;
+    }
+    .hp { position: absolute; left: -9999px; opacity: 0; pointer-events: none; }
+
+    .submit {
+      margin-top: 18px;
+    }
+    .submit:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: 0 4px 0 rgba(10,9,8,.85) !important;
+    }
+
+    .form-error {
+      display: none; margin-top: 18px;
+      font-size: 14px; color: var(--terra);
+      font-style: italic;
+    }
+    .form-error.show { display: block; }
+
+    .thanks {
+      display: none;
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(28px, 3.2vw, 42px);
+      line-height: 1.25; font-style: italic; font-weight: 500;
+      max-width: 560px;
+      color: #fff;
+    }
+    .thanks.show { display: block; }
+    .thanks .small {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; font-style: normal; font-weight: 500;
+      color: var(--muted);
+      margin-top: 18px;
+      letter-spacing: .02em;
+      line-height: 1.5;
+    }
+
+    /* ---------- footer ---------- */
+    footer {
+      padding: 56px 8vw 64px;
+      font-size: 13px; color: #fff;
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px;
+      background: var(--bg);
+    }
+    footer a { color: #fff; text-decoration: none; margin-right: 18px; }
+    footer a:hover { color: var(--lime); }
+    footer .left { font-family: 'Fraunces', Georgia, serif; }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 880px) {
+      nav.top { padding: 14px 18px; }
+      .brandmark-text { font-size: 22px; letter-spacing: 0; }
+      nav .anchor { font-size: 19px; letter-spacing: 0; }
+
+      /* Mobile hero: static image, no scroll-pin, no video.
+         Scroll-scrub is a desktop pleasure — mobile gets a clean static
+         brand mark that loads fast and scrolls like any other section. */
+      .hero { height: 100vh; }
+      .hero-sticky { position: relative; height: 100vh; }
+      .hero-bg { display: none; }
+      .hero-bg-fallback {
+        background-size: cover;
+        background-position: center 38%;
+      }
+      .hero-scroll { display: none; }
+      .hero-tag {
+        bottom: 13%;
+        font-size: clamp(20px, 5.5vw, 28px);
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      /* Loader: match hero's image positioning so the dissolve from loader
+         to hero is seamless (same composition, same crop, same anchor). */
+      .loader {
+        background-size: cover;
+        background-position: center 38%;
+      }
+      .loader-cue { bottom: clamp(48px, 7vh, 80px); }
+
+      /* manifesto banner: enforce a floor so the natural 6:1 strip doesn't
+         collapse into a sliver. switches to cover crop on her face area. */
+      .manifesto-banner {
+        aspect-ratio: auto;
+        height: clamp(160px, 32vw, 240px);
+        background-size: cover;
+        background-position: 56% center;
+      }
+      .manifesto-inner { padding: 70px 6vw 90px; }
+      .manifesto-body { font-size: clamp(26px, 6vw, 36px); }
+
+      .reel { padding: 80px 0 60px; }
+      .reel-header { padding: 0 6vw; margin-bottom: 32px; }
+      .reel h2 { font-size: clamp(36px, 9vw, 56px); }
+      .reel-track { padding: 6px 6vw 28px; gap: 18px; }
+      .reel-card { width: 240px; }
+
+      .channel { padding: 80px 6vw 100px; }
+      .channel-inner { grid-template-columns: 1fr; gap: 40px; }
+      .channel-text h2 { font-size: clamp(40px, 10vw, 64px); }
+      .channel-stats { gap: 36px; }
+      .channel-stats strong { font-size: clamp(40px, 9vw, 64px); }
+
+      /* menu: drop the chalkboard frame on mobile. it's too small for the
+         doodled border to read, and the inner content area gets crushed.
+         Keep the menu typography — chalkboard's job was decorative anyway. */
+      .find { padding: 80px 6vw 90px; }
+      .find-eyebrow { margin-bottom: 28px; }
+      .menu-board {
+        background-image: none;
+        aspect-ratio: auto;
+        padding: 0;
+        max-width: 100%;
+      }
+      .menu-item { margin-bottom: 28px; }
+      .menu-name { font-size: clamp(28px, 7.5vw, 40px); }
+      .menu-handle { font-size: clamp(14px, 3.6vw, 16px); }
+      .menu-desc { font-size: 13px; margin-top: 8px; }
+
+      .hello { padding: 90px 6vw 100px; }
+      .hello h2 { font-size: clamp(40px, 11vw, 64px); }
+      .hello p.lede { margin-bottom: 44px; font-size: clamp(18px, 4.6vw, 22px); }
+      .field input, .field textarea, .field select { font-size: 16px; }
+      .channel-cta, .submit { font-size: 24px; padding: 14px 28px 12px; }
+
+      footer {
+        flex-direction: column; gap: 12px;
+        padding: 44px 6vw 56px;
+      }
+      footer a { margin-right: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="loader" id="loader">
+    <div class="loader-cue">
+      <span>Loading</span>
+      <span class="loader-bar"></span>
+    </div>
+  </div>
+
+  <nav class="top">
+    <a class="brandmark" href="#top">
+      <span class="brandmark-text">Go Taste and See</span>
+    </a>
+    <a class="anchor" href="#hello">Say hello</a>
+  </nav>
+
+  <section id="top" class="hero">
+    <div class="hero-sticky">
+      <div class="hero-bg-fallback" aria-hidden="true"></div>
+      <video
+        class="hero-bg"
+        id="hero-video"
+        muted
+        playsinline
+        preload="auto"
+        poster="./hero-bg.png"
+        aria-label="Go Taste and See — Earth crowned with skyscrapers and cutlery, a plane in orbit, against deep space.">
+        <source src="./hero.mp4" type="video/mp4" />
+      </video>
+      <div class="hero-vignette"></div>
+      <div class="hero-tag" id="hero-tag">try it. you might like it.</div>
+      <div class="hero-scroll" id="hero-scroll">
+        <span>Scroll</span>
+        <span class="hero-scroll-dot"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="manifesto">
+    <div class="manifesto-banner" aria-hidden="true"></div>
+    <div class="manifesto-inner">
+      <div class="manifesto-body">
+        <p>I know many people who are quick to mention what they don't eat.</p>
+        <p>When I ask if they've actually <em>tried</em> it, the answer, usually, is no.</p>
+        <p>How can you know you don't like something you haven't tasted?</p>
+        <p><span class="highlight">Go taste and see.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="reel">
+    <div class="reel-header">
+      <h2>From <em>the channel</em></h2>
+    </div>
+    <div class="reel-track">
+
+      <a class="reel-card" href="https://www.youtube.com/watch?v=k3h05v-WlsE" target="_blank" rel="noopener">
+        <div class="reel-thumb" style="background: url('https://i.ytimg.com/vi/k3h05v-WlsE/hqdefault.jpg') center / cover no-repeat;">
+          <span class="reel-dur">13:06</span>
+        </div>
+        <div class="reel-title">A Taste of Home in Vegas! Former Californians showe&hellip;</div>
+        <div class="reel-meta">851 views &middot; 2 days ago</div>
+      </a>
+
+      <a class="reel-card" href="https://www.youtube.com/watch?v=TllfHOcTbdQ" target="_blank" rel="noopener">
+        <div class="reel-thumb" style="background: url('https://i.ytimg.com/vi/TllfHOcTbdQ/hqdefault.jpg') center / cover no-repeat;">
+          <span class="reel-dur">7:01</span>
+        </div>
+        <div class="reel-title">🔥 MAROON - Las Vegas' Newest Steakhouse has&hellip;</div>
+        <div class="reel-meta">518 views &middot; 2 weeks ago</div>
+      </a>
+
+      <a class="reel-card" href="https://www.youtube.com/watch?v=KJgjk6Opn6g" target="_blank" rel="noopener">
+        <div class="reel-thumb" style="background: url('https://i.ytimg.com/vi/KJgjk6Opn6g/hqdefault.jpg') center / cover no-repeat;">
+          <span class="reel-dur">7:06</span>
+        </div>
+        <div class="reel-title">Bold Flavors of Haiti in Las Vegas | Caribbean Eats Pt. 1</div>
+        <div class="reel-meta">145 views &middot; 2 weeks ago</div>
+      </a>
+
+      <a class="reel-card" href="https://www.youtube.com/watch?v=IEvsR9HX5_c" target="_blank" rel="noopener">
+        <div class="reel-thumb" style="background: url('https://i.ytimg.com/vi/IEvsR9HX5_c/hqdefault.jpg') center / cover no-repeat;">
+          <span class="reel-dur">7:50</span>
+        </div>
+        <div class="reel-title">👍👎 WAS IT A HIT OR A MISS??? #multicultural&hellip;</div>
+        <div class="reel-meta">130 views &middot; 1 month ago</div>
+      </a>
+
+      <a class="reel-card reel-card-end" href="https://www.youtube.com/@GoTasteandSeeJennifer" target="_blank" rel="noopener">
+        <div class="reel-thumb">
+          <span class="reel-end-label">See all<br/>on YouTube &rarr;</span>
+        </div>
+        <div class="reel-title">@GoTasteandSeeJennifer</div>
+        <div class="reel-meta">Subscribe to follow along</div>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="igfeed">
+    <div class="igfeed-header">
+      <h2>On <em>Instagram</em></h2>
+    </div>
+    <div class="igfeed-track">
+      <a class="ig-card ig-card-end" href="https://instagram.com/gotasteandsee" target="_blank" rel="noopener">
+        <div class="ig-thumb">
+          <span class="ig-end-label">See all<br/>on Instagram &rarr;</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <div class="smoke-zone">
+    <div class="smoke-video-wrap" aria-hidden="true">
+      <video class="smoke-video" autoplay muted loop playsinline preload="auto">
+        <source src="./smoke.mp4" type="video/mp4" />
+      </video>
+      <div class="smoke-overlay"></div>
+    </div>
+  <section class="find">
+    <div class="find-eyebrow">Todays Menu</div>
+    <div class="menu-board">
+      <ul class="menu">
+        <li class="menu-item">
+          <a class="menu-link" href="https://www.youtube.com/@GoTasteandSeeJennifer" target="_blank" rel="noopener">
+            <div class="menu-line">
+              <span class="menu-name">YouTube</span>
+              <span class="menu-leader" aria-hidden="true"></span>
+              <span class="menu-handle">@GoTasteandSeeJennifer</span>
+            </div>
+            <div class="menu-desc">Full episodes. Long form, slow chews.</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link" href="https://instagram.com/gotasteandsee" target="_blank" rel="noopener">
+            <div class="menu-line">
+              <span class="menu-name">Instagram</span>
+              <span class="menu-leader" aria-hidden="true"></span>
+              <span class="menu-handle">@gotasteandsee</span>
+            </div>
+            <div class="menu-desc">Behind the plate, frame by frame.</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link" href="https://tiktok.com/@gotasteandsee" target="_blank" rel="noopener">
+            <div class="menu-line">
+              <span class="menu-name">TikTok</span>
+              <span class="menu-leader" aria-hidden="true"></span>
+              <span class="menu-handle">@gotasteandsee</span>
+            </div>
+            <div class="menu-desc">Quick bites. Hit and run.</div>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="channel">
+    <div class="channel-inner">
+      <div class="channel-text">
+        <h2>A&nbsp;passport,<br/><em>to&nbsp;culinary<br/>adventures.</em></h2>
+        <p>Travel diaries and neighborhood dives. Dishes that earn a second bite. New episodes most weeks.</p>
+        <a class="channel-cta" href="https://www.youtube.com/@GoTasteandSeeJennifer" target="_blank" rel="noopener">Watch</a>
+      </div>
+      <div class="channel-stats">
+        <div><strong>133</strong>videos</div>
+        <div><strong>198K+</strong>views</div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <section id="hello" class="hello">
+    <div class="hello-inner">
+      <h2>Write me <em>a note.</em></h2>
+      <p class="lede">Brands, restaurants, travel boards, fellow curious eaters. I read every one of these myself.</p>
+
+      <form class="intake" id="intake-form" autocomplete="on" novalidate>
+        <div class="field">
+          <label for="name">Your name</label>
+          <input id="name" name="name" type="text" required autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="email">Your email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="subject">What's this about?</label>
+          <select id="subject" name="subject">
+            <option value="">Pick one (optional)</option>
+            <option>Brand collaboration</option>
+            <option>Restaurant or chef</option>
+            <option>Travel tip or destination</option>
+            <option>Press or media</option>
+            <option>Just saying hi</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="message">Your message</label>
+          <textarea id="message" name="message" rows="5" required></textarea>
+        </div>
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <button class="submit" type="submit" id="submit-btn">Send</button>
+        <div class="form-error" id="form-error"></div>
+      </form>
+
+      <div class="thanks" id="thanks">
+        Thanks. Your note landed.<br/>
+        I'll write back soon.
+        <div class="small">Check your inbox in a minute. There's a thank-you note on the way.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="left">Go Taste and See &middot; Jennifer Allen &middot; &copy; 2026</div>
+    <div>
+      <a href="https://www.youtube.com/@GoTasteandSeeJennifer" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://instagram.com/gotasteandsee" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://tiktok.com/@gotasteandsee" target="_blank" rel="noopener">TikTok</a>
+    </div>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://jtifhcvbgxqwlywugvjv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0aWZoY3ZiZ3hxd2x5d3Vndmp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MDc5NTgsImV4cCI6MjA4ODA4Mzk1OH0.UfRVLuvM8_HPvKXUEDXb0cxR50znv16L5Tf99AnSc7g';
+
+    // ---------- reel: pull Jennifer's latest videos from her YouTube channel ----------
+    // Calls the gotaste-youtube-feed edge function which proxies her free
+    // public RSS feed (no API key, no quota). If the call fails for any
+    // reason, the hardcoded cards stay visible — so the page never breaks.
+    function formatViewCount(n) {
+      if (n == null || !isFinite(n)) return '';
+      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M views';
+      if (n >= 1000)    return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K views';
+      return n + (n === 1 ? ' view' : ' views');
+    }
+    function formatAge(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const ms = Date.now() - d.getTime();
+      if (ms < 0) return 'just now';
+      const days = Math.floor(ms / 86400000);
+      if (days < 1)  return 'today';
+      if (days === 1) return '1 day ago';
+      if (days < 7)  return days + ' days ago';
+      const weeks = Math.floor(days / 7);
+      if (weeks === 1) return '1 week ago';
+      if (weeks < 5)   return weeks + ' weeks ago';
+      const months = Math.floor(days / 30);
+      if (months === 1) return '1 month ago';
+      if (months < 12)  return months + ' months ago';
+      const years = Math.floor(days / 365);
+      return years === 1 ? '1 year ago' : years + ' years ago';
+    }
+    function reelEscape(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+      }[c]));
+    }
+
+    (async function loadReel() {
+      const track   = document.querySelector('.reel-track');
+      const endCard = track && track.querySelector('.reel-card-end');
+      if (!track || !endCard) return;
+      try {
+        const res = await fetch(SUPABASE_URL + '/functions/v1/gotaste-youtube-feed', {
+          headers: { apikey: ANON_KEY, authorization: 'Bearer ' + ANON_KEY },
+        });
+        if (!res.ok) throw new Error('feed http ' + res.status);
+        const body   = await res.json();
+        const videos = Array.isArray(body.videos) ? body.videos : [];
+        if (!videos.length) throw new Error('no videos in feed');
+
+        // Replace the hardcoded fallback cards with live data, keep the
+        // end-of-shelf "See all on YouTube" card in place.
+        track.querySelectorAll('.reel-card:not(.reel-card-end)').forEach(c => c.remove());
+        const frag = document.createDocumentFragment();
+        for (const v of videos.slice(0, 6)) {
+          const a = document.createElement('a');
+          a.className = 'reel-card';
+          a.href      = v.videoUrl;
+          a.target    = '_blank';
+          a.rel       = 'noopener';
+          a.innerHTML = `
+            <div class="reel-thumb" style="background-image: url('${reelEscape(v.thumbnailUrl)}'); background-size: cover; background-position: center;">
+            </div>
+            <div class="reel-title">${reelEscape(v.title)}</div>
+            <div class="reel-meta">${[formatViewCount(v.viewCount), formatAge(v.published)].filter(Boolean).join(' · ')}</div>
+          `;
+          frag.appendChild(a);
+        }
+        track.insertBefore(frag, endCard);
+      } catch (err) {
+        console.warn('[reel] live feed unavailable, using fallback cards', err);
+      }
+    })();
+
+    // ---------- Instagram feed: pull Jennifer's latest posts ----------
+    (async function loadIGFeed() {
+      const track   = document.querySelector('.igfeed-track');
+      const endCard = track && track.querySelector('.ig-card-end');
+      if (!track || !endCard) return;
+      try {
+        const res = await fetch(SUPABASE_URL + '/functions/v1/gotaste-instagram-feed', {
+          headers: { apikey: ANON_KEY, authorization: 'Bearer ' + ANON_KEY },
+        });
+        if (!res.ok) throw new Error('feed http ' + res.status);
+        const body  = await res.json();
+        const posts = Array.isArray(body.posts) ? body.posts : [];
+        if (!posts.length) throw new Error('no posts');
+
+        const frag = document.createDocumentFragment();
+        for (const p of posts.slice(0, 8)) {
+          const a = document.createElement('a');
+          a.className = 'ig-card';
+          a.href      = p.url;
+          a.target    = '_blank';
+          a.rel       = 'noopener';
+          // Use <img referrerpolicy="no-referrer"> — Instagram's fbcdn
+          // serves images cross-origin only when the Referer header is
+          // empty. Without this, IG returns 403 and the thumbnails go blank.
+          // Proxy the image through our function so Instagram's CDN sees
+          // a Referer: instagram.com header (it 403s cross-origin loads
+          // otherwise, even with referrerpolicy="no-referrer").
+          const proxied = SUPABASE_URL + '/functions/v1/gotaste-instagram-feed?img=' + encodeURIComponent(p.thumbnailUrl);
+          a.innerHTML = `
+            <div class="ig-thumb">
+              <img src="${reelEscape(proxied)}" alt="" loading="lazy" />
+            </div>
+          `;
+          frag.appendChild(a);
+        }
+        track.insertBefore(frag, endCard);
+      } catch (err) {
+        console.warn('[igfeed] live feed unavailable, end-card only', err);
+      }
+    })();
+
+    // ---------- mobile detection: phones get a different hero ----------
+    // The cinematic scroll-pin + 7MB video doesn't work well on phones:
+    // iOS Safari has paint quirks with paused video, mobile data is slow,
+    // and the scroll-pin makes the page feel endless on a small viewport.
+    // Mobile gets a static brand image hero, no video, fast loader.
+    const IS_MOBILE_HERO = window.matchMedia('(max-width: 880px)').matches;
+
+    // ---------- loader: gate the experience while assets prime ----------
+    const loader      = document.getElementById('loader');
+    const LOADER_MIN_MS = 1200;
+    const LOADER_MAX_MS = IS_MOBILE_HERO ? 2400 : 12000;
+    const loaderStart   = Date.now();
+    document.body.classList.add('locked');
+
+    // ---------- hero: scroll-pinned, scroll-driven scrub ----------
+    // The .hero outer section is 300vh tall; .hero-sticky pins the visible
+    // 100vh viewport to the top. The user's first 200vh of scroll inside the
+    // pin drives the video timeline from 0 → duration. After the scrub
+    // completes, the rest of the page unpins and scrolls normally.
+    //
+    // Video has NO autoplay and NO loop — it's a tape the scroll reels through.
+    // The "try it. you might like it." tag is hidden until the scrub passes
+    // ~85% so it lands right as the animation finishes.
+    const navEl       = document.querySelector('nav.top');
+    const heroEl      = document.getElementById('top');
+    const heroSticky  = heroEl.querySelector('.hero-sticky');
+    const heroVideo   = document.getElementById('hero-video');
+    const heroTag     = document.getElementById('hero-tag');
+    const heroScroll  = document.getElementById('hero-scroll');
+
+    const TAG_SHOW_AT = 0.85;    // tag fades in once scrub passes this progress
+
+    if (IS_MOBILE_HERO) {
+      // Kill the video download entirely on mobile — they don't get the scrub.
+      try {
+        heroVideo.preload = 'none';
+        heroVideo.removeAttribute('src');
+        // Force the element to abandon any in-flight load.
+        if (typeof heroVideo.load === 'function') heroVideo.load();
+      } catch (e) { /* noop */ }
+      // Tag is normally revealed by scroll progress. On mobile we show it
+      // immediately as the static hero's permanent state.
+      heroTag.classList.add('show');
+    }
+
+    // Prime the video so the first frame renders (some mobile browsers won't
+    // paint a frame until the video has been touched). Skipped on mobile.
+    function primeVideo() {
+      if (IS_MOBILE_HERO) return;
+      try { heroVideo.currentTime = 0.001; } catch (e) {}
+    }
+    heroVideo.addEventListener('loadedmetadata', primeVideo);
+
+    // Compute scrub progress (0 → 1) based on how far through the pinned
+    // section we've scrolled. progress=0 when section's top hits viewport top,
+    // progress=1 when sticky element's bottom would hit viewport bottom.
+    function getProgress() {
+      const rect = heroEl.getBoundingClientRect();
+      const total = heroEl.offsetHeight - window.innerHeight; // 200vh worth of scroll range
+      const traveled = Math.max(0, -rect.top);
+      return total > 0 ? Math.max(0, Math.min(1, traveled / total)) : 0;
+    }
+
+    function applyProgress() {
+      // Mobile: hero is static, no scrub. Just keep nav in light-on-dark
+      // state while in the hero, flip once past it.
+      if (IS_MOBILE_HERO) {
+        const rect = heroEl.getBoundingClientRect();
+        navEl.classList.toggle('scrolled', rect.bottom < 80);
+        return;
+      }
+
+      const p = getProgress();
+
+      // Drive the video. Scroll progress maps 1:1 to video time so the
+      // animation runs all the way out by the time the pin releases.
+      // To make the scrub feel slower / faster, change .hero { height }
+      // in CSS — taller = slower, shorter = faster.
+      if (heroVideo.duration && isFinite(heroVideo.duration)) {
+        const target = p * heroVideo.duration;
+        if (Math.abs(target - heroVideo.currentTime) > 0.04) {
+          try { heroVideo.currentTime = target; } catch (e) {}
+        }
+      }
+
+      // Fade out the scroll cue over the first ~25% of the scrub.
+      if (heroScroll) heroScroll.style.opacity = String(Math.max(0, 1 - p * 4));
+
+      // Fade in the "try it" tag as the user finishes the animation.
+      heroTag.classList.toggle('show', p >= TAG_SHOW_AT);
+
+      // Nav color flip — when past the entire pinned section.
+      navEl.classList.toggle('scrolled', p >= 0.999);
+    }
+
+    let rafPending = false;
+    function onScroll() {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        applyProgress();
+        rafPending = false;
+      });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    applyProgress();
+
+    // If the video can't load, keep the static fallback visible.
+    heroVideo.addEventListener('error', () => {
+      heroVideo.style.display = 'none';
+      dismissLoader(); // don't trap the user behind a stuck loader
+    });
+
+    // ---------- loader gate logic ----------
+    function isFullyBuffered() {
+      // Mobile: no video to wait on, gate is ready as soon as min-dwell passes.
+      if (IS_MOBILE_HERO) return true;
+      if (!heroVideo.duration || !isFinite(heroVideo.duration)) return false;
+      if (heroVideo.buffered.length === 0) return false;
+      const end = heroVideo.buffered.end(heroVideo.buffered.length - 1);
+      return end >= heroVideo.duration - 0.12;
+    }
+    let loaderDismissed = false;
+    function dismissLoader() {
+      if (loaderDismissed) return;
+      loaderDismissed = true;
+      // Desktop: force the first frame to paint before revealing the hero.
+      // iOS Safari refuses to render a paused video element until it's been
+      // played at least once. Skipped on mobile (no video).
+      if (!IS_MOBILE_HERO) {
+        try {
+          const p = heroVideo.play();
+          if (p && typeof p.then === 'function') {
+            p.then(() => heroVideo.pause()).catch(() => {});
+          } else {
+            heroVideo.pause();
+          }
+        } catch (e) { /* noop — poster will still show */ }
+      }
+      loader.classList.add('hide');
+      document.body.classList.remove('locked');
+      setTimeout(() => loader.remove(), 900);
+    }
+    function maybeFinishLoader() {
+      const elapsed = Date.now() - loaderStart;
+      if (isFullyBuffered() || elapsed >= LOADER_MAX_MS) {
+        const wait = Math.max(0, LOADER_MIN_MS - elapsed);
+        setTimeout(dismissLoader, wait);
+        return;
+      }
+      setTimeout(maybeFinishLoader, 120);
+    }
+    heroVideo.addEventListener('progress',       maybeFinishLoader);
+    heroVideo.addEventListener('loadeddata',     maybeFinishLoader);
+    heroVideo.addEventListener('canplaythrough', maybeFinishLoader);
+    // Kick once in case the video was instantly cached.
+    setTimeout(maybeFinishLoader, 200);
+
+    // While the loader is up, freeze scroll-scrub state so it doesn't try
+    // to seek into unbuffered video.
+    const _origOnScroll = onScroll;
+    function gatedOnScroll() { if (!loaderDismissed) return; _origOnScroll(); }
+    window.removeEventListener('scroll', onScroll);
+    window.addEventListener('scroll', gatedOnScroll, { passive: true });
+
+    const form      = document.getElementById('intake-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorEl   = document.getElementById('form-error');
+    const thanksEl  = document.getElementById('thanks');
+
+    function showError(m) { errorEl.textContent = m; errorEl.classList.add('show'); }
+    function clearError() { errorEl.textContent = ''; errorEl.classList.remove('show'); }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      const data = Object.fromEntries(new FormData(form));
+      if (!data.name || !data.email || !data.message) {
+        showError('Name, email, and a message please.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending';
+
+      try {
+        const res = await fetch(SUPABASE_URL + '/functions/v1/gotaste-intake', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: ANON_KEY,
+            Authorization: 'Bearer ' + ANON_KEY,
+          },
+          body: JSON.stringify(data),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          showError(body.error || 'Something went wrong. Try again in a minute.');
+          return;
+        }
+        form.style.display = 'none';
+        thanksEl.classList.add('show');
+        thanksEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (err) {
+        showError('Could not send right now. Try again in a minute.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send';
+      }
+    });
+  </script>
+</body>
+</html>
