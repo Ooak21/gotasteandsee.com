@@ -4,22 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
-    // Device-split router: mobile (<768px viewport) gets its own dedicated
-    // page. Desktop/tablet stay on index.html (this file). Fires synchronously
-    // BEFORE any rendering so mobile never paints a desktop frame.
+    // This is the mobile-dedicated page. If somehow opened on desktop
+    // (e.g., shared URL, manual nav), bounce back to index.html.
     (function () {
       try {
-        var isMobile = window.matchMedia('(max-width: 767px)').matches;
-        var alreadyOnMobile = /\/mobile\.html$/.test(location.pathname);
-        if (isMobile && !alreadyOnMobile) {
-          location.replace('mobile.html' + location.search + location.hash);
+        var isDesktop = window.matchMedia('(min-width: 768px)').matches;
+        if (isDesktop) {
+          location.replace('index.html' + location.search + location.hash);
         }
-      } catch (e) { /* if matchMedia throws for any reason, stay on desktop */ }
+      } catch (e) {}
     })();
   </script>
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <title>Go Taste and See · Jennifer Allen</title>
   <meta name="description" content="Food is a portal. Jennifer Allen on YouTube, Instagram, and TikTok." />
   <link rel="icon" href="./logo.png" />
@@ -95,7 +90,7 @@
     .loader {
       position: fixed; inset: 0;
       z-index: 100;
-      background: #050609 url('./hero-bg.png') center 45% / cover no-repeat;
+      background: #050609 url('./hero-bg-mobile.png') center 45% / cover no-repeat;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       transition: opacity .8s ease;
@@ -198,7 +193,7 @@
     /* Static-image fallback if the video fails to load or is disabled */
     .hero-bg-fallback {
       position: absolute; inset: 0;
-      background-image: url('./hero-bg.png');
+      background-image: url('./hero-bg-mobile.png');
       background-size: cover;
       background-position: center 45%;
       background-repeat: no-repeat;
@@ -260,7 +255,7 @@
       position: relative;
       background:
         linear-gradient(rgba(10,9,8,.40), rgba(10,9,8,.50)),
-        url('./manifesto-void-bg.jpg') center center / cover no-repeat fixed,
+        url('./manifesto-void-bg.jpg') center center / cover no-repeat scroll,
         var(--bg);
       padding: 0;
     }
@@ -867,18 +862,40 @@
     /* ---------- responsive ---------- */
     @media (max-width: 880px) {
       nav.top { padding: 14px 18px; }
-      .brandmark-text { font-size: 22px; letter-spacing: 0; }
+      .brandmark-text { font-size: 19px; letter-spacing: 0; }
       nav .anchor { font-size: 19px; letter-spacing: 0; }
 
       /* Mobile hero: static image, no scroll-pin, no video.
          Scroll-scrub is a desktop pleasure — mobile gets a clean static
          brand mark that loads fast and scrolls like any other section. */
-      .hero { height: 100vh; }
-      .hero-sticky { position: relative; height: 100vh; }
-      .hero-bg { display: none; }
+      .hero, .hero-sticky {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 720 / 808;
+        position: relative;
+        overflow: hidden;
+      }
       .hero-bg-fallback {
-        background-size: cover;
-        background-position: center 38%;
+        display: none !important;
+      }
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .loader {
+        background-image: url('./hero-mobile-static.jpg') !important;
+        background-size: 150% auto;
+        background-position: center;
+        background-color: #050609;
+        background-repeat: no-repeat;
+      }
+      /* Intake bg image was designed for desktop two-column layout — on
+         a portrait phone it crops to empty center. Drop to plain black. */
+      .hello {
+        background: #000 !important;
       }
       .hero-scroll { display: none; }
       .hero-tag {
@@ -1047,12 +1064,14 @@
       <video
         class="hero-bg"
         id="hero-video"
+        autoplay
         muted
+        loop
         playsinline
         preload="auto"
-        poster="./hero-bg.png"
+        poster="./hero-bg-mobile.png"
         aria-label="Go Taste and See — Earth crowned with skyscrapers and cutlery, a plane in orbit, against deep space.">
-        <source src="./hero.mp4" type="video/mp4" />
+        <source src="./hero-mobile.mp4" type="video/mp4" />
       </video>
       <div class="hero-vignette"></div>
       <div class="hero-tag" id="hero-tag">try it. you might like it.</div>
@@ -1415,19 +1434,15 @@
     const TAG_SHOW_AT = 0.85;    // tag fades in once scrub passes this progress
 
     if (IS_MOBILE_HERO) {
-      // Kill the video download entirely on mobile — they don't get the scrub.
-      try {
-        heroVideo.preload = 'none';
-        heroVideo.removeAttribute('src');
-        // Force the element to abandon any in-flight load.
-        if (typeof heroVideo.load === 'function') heroVideo.load();
-      } catch (e) { /* noop */ }
-      // Tag is normally revealed by scroll progress. On mobile we show it
-      // immediately as the static hero's permanent state.
+      // Mobile.html: video has autoplay + loop attrs in HTML, it plays itself.
+      // Show the tag immediately (no scroll-scrub to reveal it later).
       heroTag.classList.add('show');
-      // No video to wait for — dismiss the loader after the min visible time
-      // (1.2s) so the user can scroll instead of waiting on maybeFinishLoader
-      // to time out at LOADER_MAX_MS. Guarded by loaderDismissed flag inside.
+      // Belt-and-suspenders play() call for browsers that need the explicit kick.
+      try {
+        var p = heroVideo.play();
+        if (p && typeof p.catch === 'function') p.catch(function(){});
+      } catch (e) {}
+      // Dismiss the loader after the min visible time so scroll unlocks fast.
       setTimeout(function(){ dismissLoader(); }, LOADER_MIN_MS);
     }
 
