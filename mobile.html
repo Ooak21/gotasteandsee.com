@@ -886,10 +886,10 @@
         object-fit: cover;
       }
       .loader {
-        background-image: url('./hero-mobile-static.jpg') !important;
-        background-size: 150% auto;
+        background-color: #000;
+        background-image: url('./loader-bg.jpg');
+        background-size: contain;
         background-position: center;
-        background-color: #050609;
         background-repeat: no-repeat;
       }
       /* Intake bg image was designed for desktop two-column layout — on
@@ -903,12 +903,6 @@
         font-size: clamp(20px, 5.5vw, 28px);
         opacity: 1;
         transform: translateX(-50%) translateY(0);
-      }
-      /* Loader: match hero's image positioning so the dissolve from loader
-         to hero is seamless (same composition, same crop, same anchor). */
-      .loader {
-        background-size: cover;
-        background-position: center 38%;
       }
       .loader-cue { bottom: clamp(48px, 7vh, 80px); }
 
