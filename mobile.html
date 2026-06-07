@@ -1399,6 +1399,8 @@
 
     const FRAME_COUNT = 60;                   // hero-frames/f-001.jpg .. f-060.jpg
     const TAG_SHOW_AT = 0.82;                 // tag fades in once scrub passes this
+    const HERO_FIT    = 0.95;                 // <1 shrinks the frame so cropped edges return
+                                              // (1.0 = full-bleed cover; lower = more visible, may letterbox)
     const frameUrl = (n) => './hero-frames/f-' + String(n).padStart(3, '0') + '.jpg';
 
     const frames = new Array(FRAME_COUNT);
@@ -1419,9 +1421,11 @@
       ctx.globalAlpha = (alpha == null) ? 1 : alpha;
       const cw = canvas.width, ch = canvas.height;
       const ir = img.naturalWidth / img.naturalHeight, cr = cw / ch;
-      let dw, dh, dx, dy;
-      if (cr > ir) { dw = cw; dh = cw / ir; dx = 0; dy = (ch - dh) * 0.45; }
-      else         { dh = ch; dw = ch * ir; dy = 0; dx = (cw - dw) / 2; }
+      let dw, dh;
+      if (cr > ir) { dw = cw; dh = cw / ir; }   // cover: fill width, overflow height
+      else         { dh = ch; dw = ch * ir; }   // cover: fill height, overflow width
+      dw *= HERO_FIT; dh *= HERO_FIT;           // shrink to bring cropped edges back in
+      const dx = (cw - dw) / 2, dy = (ch - dh) / 2;
       ctx.drawImage(img, dx, dy, dw, dh);
       ctx.globalAlpha = 1;
     }
@@ -1457,6 +1461,9 @@
       const frac = exact - i;
       const a = loaded(i) || nearestLoaded(i);
       const b = loaded(Math.min(FRAME_COUNT - 1, i + 1));
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#050609';                   // fill any letterbox with the hero's near-black
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       if (a) drawCover(a, 1);
       if (b && frac > 0.001) drawCover(b, frac);   // ease into the next frame
       heroTag.classList.toggle('show', p >= TAG_SHOW_AT);
