@@ -375,9 +375,17 @@
       max-width: 1080px;
     }
     .reel-eyebrow {
+      display: inline-flex; align-items: center;
       font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
-      color: var(--blue); font-weight: 700;
+      color: #FF0000; font-weight: 700;
       margin-bottom: 16px;
+    }
+    .yt-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 21px; border-radius: 6px;
+      background: #FF0000; color: #fff;
+      font-size: 9px; line-height: 1; padding-left: 1px;
+      margin-right: 9px;
     }
     .reel h2 {
       font-family: 'Inter', -apple-system, 'SF Pro Display', system-ui, sans-serif;
@@ -387,7 +395,7 @@
       margin: 0;
       color: var(--cream);
     }
-    .reel h2 em { font-style: normal; color: var(--lime); }
+    .reel h2 em { font-style: normal; color: #FF0000; }
 
     .reel-track {
       display: flex;
@@ -453,12 +461,18 @@
       font-variant-numeric: tabular-nums;
     }
     .reel-card-end .reel-thumb {
-      background: linear-gradient(135deg, rgba(23,137,219,.18) 0%, rgba(184,209,56,.10) 100%);
+      background: linear-gradient(135deg, rgba(255,0,0,.22) 0%, rgba(204,0,0,.10) 100%);
     }
     .reel-card-end .reel-thumb::before {
       content: '';
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, rgba(184,209,56,.10), transparent 70%);
+      background: radial-gradient(ellipse at center, rgba(255,0,0,.14), transparent 70%);
+    }
+    /* YouTube-red scroll arrows, scoped to the reel section only */
+    .reel .shelf-arrow:hover {
+      background: #FF0000;
+      color: #fff;
+      border-color: #FF0000;
     }
     .reel-end-label {
       font-family: 'Fraunces', Georgia, serif;
@@ -469,37 +483,6 @@
       position: relative;
       z-index: 2;
     }
-
-    /* ---------- Instagram feed shelf ---------- */
-    .igfeed {
-      padding: 30px 0 90px;
-      background: #000;
-    }
-    .igfeed-header {
-      padding: 0 8vw;
-      margin-bottom: 44px;
-      max-width: 1080px;
-    }
-    .igfeed h2 {
-      font-family: 'Inter', -apple-system, 'SF Pro Display', system-ui, sans-serif;
-      font-size: clamp(34px, 4.4vw, 56px);
-      line-height: 1.02; font-weight: 700;
-      letter-spacing: -0.04em;
-      margin: 0;
-      color: var(--cream);
-    }
-    .igfeed h2 em { font-style: normal; color: var(--lime); }
-
-    .igfeed-track {
-      display: flex; gap: 18px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scroll-snap-type: x proximity;
-      scroll-padding-left: 8vw;
-      padding: 6px 8vw 28px;
-      scrollbar-width: none;
-    }
-    .igfeed-track::-webkit-scrollbar { display: none; }
 
     /* Shelf navigation arrows – obvious left/right controls for horizontal feeds */
     .shelf-arrows {
@@ -538,42 +521,8 @@
       border-color: var(--lime);
       transform: scale(1.05);
     }
-    .reel, .igfeed {
+    .reel {
       position: relative;
-    }
-
-    .ig-card {
-      flex: 0 0 auto;
-      width: clamp(200px, 22vw, 280px);
-      text-decoration: none;
-      color: var(--cream);
-      scroll-snap-align: start;
-      transition: transform .25s ease;
-    }
-    .ig-card:hover { transform: translateY(-4px); }
-
-    .ig-thumb {
-      aspect-ratio: 1;
-      border-radius: 6px;
-      overflow: hidden;
-      background: linear-gradient(135deg, #1B1916 0%, #0A0908 100%);
-      position: relative;
-    }
-    .ig-thumb img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .ig-card-end .ig-thumb {
-      background: linear-gradient(135deg, rgba(184,209,56,.16) 0%, rgba(23,137,219,.18) 100%);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .ig-end-label {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 19px; font-style: italic; font-weight: 500;
-      color: var(--cream);
-      text-align: center; line-height: 1.3;
-      padding: 0 14px;
     }
 
     /* ---------- smoke zone: shared video bg behind Today's Menu + Passport ---------- */
@@ -967,21 +916,21 @@
       .channel-stats { gap: 36px; }
       .channel-stats strong { font-size: clamp(40px, 9vw, 64px); }
 
-      /* menu: drop the chalkboard frame on mobile. it's too small for the
-         doodled border to read, and the inner content area gets crushed.
-         Keep the menu typography — chalkboard's job was decorative anyway. */
+      /* chalkboard menu restored on mobile: keep the base chalkboard frame, just
+         size the type so the 3 items sit inside the doodled border without crushing.
+         (desc hidden on phone to keep the list clear of the border.) */
       .find { padding: 80px 6vw 90px; }
       .find-eyebrow { margin-bottom: 28px; }
       .menu-board {
-        background-image: none;
-        aspect-ratio: auto;
-        padding: 0;
-        max-width: 100%;
+        aspect-ratio: 517 / 612;
+        padding: 20% 17%;
+        max-width: 400px;
       }
-      .menu-item { margin-bottom: 28px; }
-      .menu-name { font-size: clamp(28px, 7.5vw, 40px); }
-      .menu-handle { font-size: clamp(14px, 3.6vw, 16px); }
-      .menu-desc { font-size: 13px; margin-top: 8px; }
+      .menu-item { margin-bottom: 18px; }
+      .menu-item:last-child { margin-bottom: 0; }
+      .menu-name { font-size: clamp(22px, 6vw, 30px); }
+      .menu-handle { font-size: clamp(12px, 3.4vw, 15px); }
+      .menu-desc { display: none; }
 
       .hello { padding: 80px 6vw 90px; }
       .hello-inner { grid-template-columns: 1fr; gap: 40px; }
@@ -1123,7 +1072,8 @@
 
   <section class="reel">
     <div class="reel-header">
-      <h2>From <em>the channel</em></h2>
+      <div class="reel-eyebrow"><span class="yt-badge" aria-hidden="true">&#9654;</span>YouTube</div>
+      <h2>Visit us <em>on YouTube</em></h2>
     </div>
 
     <div class="shelf-arrows" aria-hidden="true">
@@ -1176,24 +1126,6 @@
     </div>
   </section>
 
-  <section class="igfeed">
-    <div class="igfeed-header">
-      <h2>On <em>Instagram</em></h2>
-    </div>
-
-    <div class="shelf-arrows" aria-hidden="true">
-      <button class="shelf-arrow ig-prev" type="button" aria-label="Scroll Instagram left">‹</button>
-      <button class="shelf-arrow ig-next" type="button" aria-label="Scroll Instagram right">›</button>
-    </div>
-
-    <div class="igfeed-track">
-      <a class="ig-card ig-card-end" href="https://instagram.com/gotasteandsee" target="_blank" rel="noopener">
-        <div class="ig-thumb">
-          <span class="ig-end-label">See all<br/>on Instagram &rarr;</span>
-        </div>
-      </a>
-    </div>
-  </section>
 
   <div class="smoke-zone">
   <section class="find">
@@ -1214,16 +1146,6 @@
               <span class="menu-handle">@GoTasteandSeeJennifer</span>
             </div>
             <div class="menu-desc">Full episodes. Long form, slow chews.</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a class="menu-link" href="https://instagram.com/gotasteandsee" target="_blank" rel="noopener">
-            <div class="menu-line">
-              <span class="menu-name">Instagram</span>
-              <span class="menu-leader" aria-hidden="true"></span>
-              <span class="menu-handle">@gotasteandsee</span>
-            </div>
-            <div class="menu-desc">Behind the plate, frame by frame.</div>
           </a>
         </li>
         <li class="menu-item">
@@ -1317,7 +1239,6 @@
     <div class="left">Go Taste and See &middot; Jennifer Allen &middot; &copy; 2026</div>
     <div>
       <a href="https://www.youtube.com/@GoTasteandSeeJennifer" target="_blank" rel="noopener">YouTube</a>
-      <a href="https://instagram.com/gotasteandsee" target="_blank" rel="noopener">Instagram</a>
       <a href="https://tiktok.com/@gotasteandsee" target="_blank" rel="noopener">TikTok</a>
     </div>
   </footer>
@@ -1394,47 +1315,6 @@
         track.insertBefore(frag, endCard);
       } catch (err) {
         console.warn('[reel] live feed unavailable, using fallback cards', err);
-      }
-    })();
-
-    // ---------- Instagram feed: pull Jennifer's latest posts ----------
-    (async function loadIGFeed() {
-      const track   = document.querySelector('.igfeed-track');
-      const endCard = track && track.querySelector('.ig-card-end');
-      if (!track || !endCard) return;
-      try {
-        const res = await fetch(SUPABASE_URL + '/functions/v1/gotaste-instagram-feed', {
-          headers: { apikey: ANON_KEY, authorization: 'Bearer ' + ANON_KEY },
-        });
-        if (!res.ok) throw new Error('feed http ' + res.status);
-        const body  = await res.json();
-        const posts = Array.isArray(body.posts) ? body.posts : [];
-        if (!posts.length) throw new Error('no posts');
-
-        const frag = document.createDocumentFragment();
-        for (const p of posts.slice(0, 8)) {
-          const a = document.createElement('a');
-          a.className = 'ig-card';
-          a.href      = p.url;
-          a.target    = '_blank';
-          a.rel       = 'noopener';
-          // Use <img referrerpolicy="no-referrer"> — Instagram's fbcdn
-          // serves images cross-origin only when the Referer header is
-          // empty. Without this, IG returns 403 and the thumbnails go blank.
-          // Proxy the image through our function so Instagram's CDN sees
-          // a Referer: instagram.com header (it 403s cross-origin loads
-          // otherwise, even with referrerpolicy="no-referrer").
-          const proxied = SUPABASE_URL + '/functions/v1/gotaste-instagram-feed?img=' + encodeURIComponent(p.thumbnailUrl);
-          a.innerHTML = `
-            <div class="ig-thumb">
-              <img src="${reelEscape(proxied)}" alt="" loading="lazy" />
-            </div>
-          `;
-          frag.appendChild(a);
-        }
-        track.insertBefore(frag, endCard);
-      } catch (err) {
-        console.warn('[igfeed] live feed unavailable, end-card only', err);
       }
     })();
 
@@ -1627,7 +1507,7 @@
     });
   </script>
 
-  <!-- Shelf scroll controls for YouTube + Instagram horizontal feeds -->
+  <!-- Shelf scroll controls for the YouTube videos shelf -->
   <script>
     (function() {
       function setupShelf(trackSelector, prevSelector, nextSelector) {
@@ -1662,7 +1542,6 @@
       }
 
       setupShelf('.reel-track', '.reel-prev', '.reel-next');
-      setupShelf('.igfeed-track', '.ig-prev', '.ig-next');
     })();
   </script>
 
