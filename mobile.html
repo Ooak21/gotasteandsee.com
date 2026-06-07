@@ -90,7 +90,7 @@
     .loader {
       position: fixed; inset: 0;
       z-index: 100;
-      background: #050609 url('./hero-bg-mobile.png') center 45% / cover no-repeat;
+      background: #050609 url('./hero-mobile-static.jpg') center 45% / cover no-repeat;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       transition: opacity .8s ease;
@@ -193,7 +193,7 @@
     /* Static-image fallback if the video fails to load or is disabled */
     .hero-bg-fallback {
       position: absolute; inset: 0;
-      background-image: url('./hero-bg-mobile.png');
+      background-image: url('./hero-mobile-static.jpg');
       background-size: cover;
       background-position: center 45%;
       background-repeat: no-repeat;
@@ -865,26 +865,9 @@
       .brandmark-text { font-size: 19px; letter-spacing: 0; }
       nav .anchor { font-size: 19px; letter-spacing: 0; }
 
-      /* Mobile hero: static image, no scroll-pin, no video.
-         Scroll-scrub is a desktop pleasure — mobile gets a clean static
-         brand mark that loads fast and scrolls like any other section. */
-      .hero, .hero-sticky {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 720 / 808;
-        position: relative;
-        overflow: hidden;
-      }
-      .hero-bg-fallback {
-        display: none !important;
-      }
-      .hero-bg {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
+      /* Mobile hero uses the same scroll-pinned scrub as desktop — the base
+         .hero (300vh) / .hero-sticky (sticky 100vh) rules apply as-is, so no
+         hero overrides here. Scroll drives the dim→lit reveal. */
       .loader {
         background-color: #000;
         background-image: url('./loader-bg.jpg');
@@ -898,11 +881,11 @@
         background: #000 !important;
       }
       .hero-scroll { display: none; }
+      /* Phone sizing for the tag; visibility is driven by the scrub (.show
+         fades it in near the end of the reveal, matching desktop). */
       .hero-tag {
         bottom: 13%;
         font-size: clamp(20px, 5.5vw, 28px);
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
       }
       .loader-cue { bottom: clamp(48px, 7vh, 80px); }
 
@@ -1058,12 +1041,10 @@
       <video
         class="hero-bg"
         id="hero-video"
-        autoplay
         muted
-        loop
         playsinline
         preload="auto"
-        poster="./hero-bg-mobile.png"
+        poster="./hero-mobile-static.jpg"
         aria-label="Go Taste and See — Earth crowned with skyscrapers and cutlery, a plane in orbit, against deep space.">
         <source src="./hero-mobile.mp4" type="video/mp4" />
       </video>
@@ -1408,7 +1389,13 @@
     // iOS Safari has paint quirks with paused video, mobile data is slow,
     // and the scroll-pin makes the page feel endless on a small viewport.
     // Mobile gets a static brand image hero, no video, fast loader.
-    const IS_MOBILE_HERO = window.matchMedia('(max-width: 880px)').matches;
+    // Mobile now uses the SAME scroll-pinned scrub hero as desktop (Luis 2026-06-06):
+    // scroll drives the dim→lit reveal, no autoplay, no loop. The hero clip was
+    // re-encoded all-intra so every frame is a seek target (smooth scrub). Keeping
+    // this false routes every hero branch below through the proven desktop path,
+    // including the iOS play→pause warm-up in dismissLoader() that forces paused-
+    // video frames to paint. (Was: matchMedia('(max-width: 880px)').)
+    const IS_MOBILE_HERO = false;
 
     // ---------- loader: gate the experience while assets prime ----------
     const loader      = document.getElementById('loader');
@@ -1436,7 +1423,9 @@
     const TAG_SHOW_AT = 0.85;    // tag fades in once scrub passes this progress
 
     if (IS_MOBILE_HERO) {
-      // Mobile.html: video has autoplay + loop attrs in HTML, it plays itself.
+      // Mobile.html: the hero is a one-way reveal (dim → lit). It autoplays
+      // once and holds on the final lit frame — NO loop (looping hard-cut
+      // back to the dim start frame every 6s, which looked terrible).
       // Show the tag immediately (no scroll-scrub to reveal it later).
       heroTag.classList.add('show');
       // Belt-and-suspenders play() call for browsers that need the explicit kick.
