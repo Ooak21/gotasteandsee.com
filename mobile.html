@@ -910,15 +910,7 @@
       .reel-track { padding: 6px 6vw 28px; gap: 18px; }
       .reel-card { width: 240px; }
 
-      /* Show the whole passport/plane shot on mobile: full-width photo across the
-         top (sized to its own 3:2 ratio so nothing is cropped), headline + stats
-         below on black. Was `cover`, which zoomed into the empty center. */
-      .channel {
-        padding: 67vw 6vw 80px;            /* top pad = photo height (100vw / 1.5) */
-        background-image: url('./channel-bg-passport.jpg?v=1');
-        background-size: 100% auto;
-        background-position: top center;
-      }
+      .channel { padding: 80px 6vw 100px; }
       .channel-inner { grid-template-columns: 1fr; gap: 40px; }
       .channel-text h2 { font-size: clamp(40px, 10vw, 64px); }
       .channel-stats { gap: 36px; }
