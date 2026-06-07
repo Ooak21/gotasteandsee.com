@@ -148,6 +148,7 @@
     }
     nav.top > * { pointer-events: auto; }
     .brandmark { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brandmark-logo { height: 36px; width: 36px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
     .brandmark-text {
       font-family: 'Inter', -apple-system, 'SF Pro Display', system-ui, sans-serif;
       font-size: 22px; font-weight: 700;
@@ -985,6 +986,7 @@
 
   <nav class="top">
     <a class="brandmark" href="#top">
+      <img class="brandmark-logo" src="./logo.png" alt="" aria-hidden="true" />
       <span class="brandmark-text">Go Taste and See</span>
     </a>
     <a class="anchor" href="#hello">Say hello</a>
