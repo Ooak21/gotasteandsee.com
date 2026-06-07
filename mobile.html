@@ -1038,16 +1038,10 @@
   <section id="top" class="hero">
     <div class="hero-sticky">
       <div class="hero-bg-fallback" aria-hidden="true"></div>
-      <video
+      <canvas
         class="hero-bg"
-        id="hero-video"
-        muted
-        playsinline
-        preload="auto"
-        poster="./hero-mobile-static.jpg"
-        aria-label="Go Taste and See — Earth crowned with skyscrapers and cutlery, a plane in orbit, against deep space.">
-        <source src="./hero-mobile.mp4" type="video/mp4" />
-      </video>
+        id="hero-canvas"
+        aria-label="Go Taste and See — Earth crowned with skyscrapers and cutlery, a plane in orbit, against deep space."></canvas>
       <div class="hero-vignette"></div>
       <div class="hero-tag" id="hero-tag">try it. you might like it.</div>
     </div>
@@ -1384,106 +1378,76 @@
       }
     })();
 
-    // ---------- mobile detection: phones get a different hero ----------
-    // The cinematic scroll-pin + 7MB video doesn't work well on phones:
-    // iOS Safari has paint quirks with paused video, mobile data is slow,
-    // and the scroll-pin makes the page feel endless on a small viewport.
-    // Mobile gets a static brand image hero, no video, fast loader.
-    // Mobile now uses the SAME scroll-pinned scrub hero as desktop (Luis 2026-06-06):
-    // scroll drives the dim→lit reveal, no autoplay, no loop. The hero clip was
-    // re-encoded all-intra so every frame is a seek target (smooth scrub). Keeping
-    // this false routes every hero branch below through the proven desktop path,
-    // including the iOS play→pause warm-up in dismissLoader() that forces paused-
-    // video frames to paint. (Was: matchMedia('(max-width: 880px)').)
-    const IS_MOBILE_HERO = false;
-
-    // ---------- loader: gate the experience while assets prime ----------
-    const loader      = document.getElementById('loader');
-    const LOADER_MIN_MS = 1200;
-    const LOADER_MAX_MS = IS_MOBILE_HERO ? 2400 : 12000;
+    // ---------- mobile hero: scroll-scrubbed frame sequence (canvas) ----------
+    // iOS Safari will NOT repaint a paused/seeked <video>, so a scroll-scrubbed
+    // video just feels like broken scroll on a phone. Instead of seeking a video
+    // we draw a pre-extracted frame sequence (hero-frames/) onto a <canvas> — a
+    // canvas redraws on every scroll frame on any device (same reason the journey
+    // page uses a canvas). .hero is 300vh; the sticky 100vh viewport pins while
+    // 200vh of scroll drives the dim->lit reveal 0 -> 1. The "try it" tag fades in
+    // near the end. Desktop (index.html) keeps its own all-intra video scrub.
+    const loader        = document.getElementById('loader');
+    const LOADER_MIN_MS = 900;
     const loaderStart   = Date.now();
     document.body.classList.add('locked');
 
-    // ---------- hero: scroll-pinned, scroll-driven scrub ----------
-    // The .hero outer section is 300vh tall; .hero-sticky pins the visible
-    // 100vh viewport to the top. The user's first 200vh of scroll inside the
-    // pin drives the video timeline from 0 → duration. After the scrub
-    // completes, the rest of the page unpins and scrolls normally.
-    //
-    // Video has NO autoplay and NO loop — it's a tape the scroll reels through.
-    // The "try it. you might like it." tag is hidden until the scrub passes
-    // ~85% so it lands right as the animation finishes.
-    const navEl       = document.querySelector('nav.top');
-    const heroEl      = document.getElementById('top');
-    const heroSticky  = heroEl.querySelector('.hero-sticky');
-    const heroVideo   = document.getElementById('hero-video');
-    const heroTag     = document.getElementById('hero-tag');
-    const heroScroll  = document.getElementById('hero-scroll');
+    const navEl   = document.querySelector('nav.top');
+    const heroEl  = document.getElementById('top');
+    const heroTag = document.getElementById('hero-tag');
+    const canvas  = document.getElementById('hero-canvas');
+    const ctx     = canvas.getContext('2d');
 
-    const TAG_SHOW_AT = 0.85;    // tag fades in once scrub passes this progress
+    const FRAME_COUNT = 60;                   // hero-frames/f-001.jpg .. f-060.jpg
+    const TAG_SHOW_AT = 0.82;                 // tag fades in once scrub passes this
+    const frameUrl = (n) => './hero-frames/f-' + String(n).padStart(3, '0') + '.jpg';
 
-    if (IS_MOBILE_HERO) {
-      // Mobile.html: the hero is a one-way reveal (dim → lit). It autoplays
-      // once and holds on the final lit frame — NO loop (looping hard-cut
-      // back to the dim start frame every 6s, which looked terrible).
-      // Show the tag immediately (no scroll-scrub to reveal it later).
-      heroTag.classList.add('show');
-      // Belt-and-suspenders play() call for browsers that need the explicit kick.
-      try {
-        var p = heroVideo.play();
-        if (p && typeof p.catch === 'function') p.catch(function(){});
-      } catch (e) {}
-      // Dismiss the loader after the min visible time so scroll unlocks fast.
-      setTimeout(function(){ dismissLoader(); }, LOADER_MIN_MS);
+    const frames = new Array(FRAME_COUNT);
+    let framesReady = 0;
+
+    // Backing store sized to the displayed box * DPR (capped) for a crisp draw.
+    function sizeCanvas() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      const r = canvas.getBoundingClientRect();
+      canvas.width  = Math.max(1, Math.round(r.width  * dpr));
+      canvas.height = Math.max(1, Math.round(r.height * dpr));
     }
 
-    // Prime the video so the first frame renders (some mobile browsers won't
-    // paint a frame until the video has been touched). Skipped on mobile.
-    function primeVideo() {
-      if (IS_MOBILE_HERO) return;
-      try { heroVideo.currentTime = 0.001; } catch (e) {}
+    // object-fit: cover math (portrait phone crops the wide sides; logo stays centered).
+    function drawCover(img) {
+      if (!img || !img.naturalWidth) return;
+      const cw = canvas.width, ch = canvas.height;
+      const ir = img.naturalWidth / img.naturalHeight, cr = cw / ch;
+      let dw, dh, dx, dy;
+      if (cr > ir) { dw = cw; dh = cw / ir; dx = 0; dy = (ch - dh) * 0.45; }
+      else         { dh = ch; dw = ch * ir; dy = 0; dx = (cw - dw) / 2; }
+      ctx.drawImage(img, dx, dy, dw, dh);
     }
-    heroVideo.addEventListener('loadedmetadata', primeVideo);
 
-    // Compute scrub progress (0 → 1) based on how far through the pinned
-    // section we've scrolled. progress=0 when section's top hits viewport top,
-    // progress=1 when sticky element's bottom would hit viewport bottom.
+    // If the exact frame isn't decoded yet, draw the nearest one that is, so the
+    // reveal never blanks while frames are still streaming in.
+    function nearestLoaded(idx) {
+      for (let d = 0; d < FRAME_COUNT; d++) {
+        const a = frames[idx - d], b = frames[idx + d];
+        if (a && a.complete && a.naturalWidth) return a;
+        if (b && b.complete && b.naturalWidth) return b;
+      }
+      return null;
+    }
+
     function getProgress() {
       const rect = heroEl.getBoundingClientRect();
-      const total = heroEl.offsetHeight - window.innerHeight; // 200vh worth of scroll range
+      const total = heroEl.offsetHeight - window.innerHeight;  // 200vh of scroll range
       const traveled = Math.max(0, -rect.top);
       return total > 0 ? Math.max(0, Math.min(1, traveled / total)) : 0;
     }
 
-    function applyProgress() {
-      // Mobile: hero is static, no scrub. Just keep nav in light-on-dark
-      // state while in the hero, flip once past it.
-      if (IS_MOBILE_HERO) {
-        const rect = heroEl.getBoundingClientRect();
-        navEl.classList.toggle('scrolled', rect.bottom < 80);
-        return;
-      }
-
+    function render() {
       const p = getProgress();
-
-      // Drive the video. Scroll progress maps 1:1 to video time so the
-      // animation runs all the way out by the time the pin releases.
-      // To make the scrub feel slower / faster, change .hero { height }
-      // in CSS — taller = slower, shorter = faster.
-      if (heroVideo.duration && isFinite(heroVideo.duration)) {
-        const target = p * heroVideo.duration;
-        if (Math.abs(target - heroVideo.currentTime) > 0.04) {
-          try { heroVideo.currentTime = target; } catch (e) {}
-        }
-      }
-
-      // Fade out the scroll cue over the first ~25% of the scrub.
-      if (heroScroll) heroScroll.style.opacity = String(Math.max(0, 1 - p * 4));
-
-      // Fade in the "try it" tag as the user finishes the animation.
+      const idx = Math.min(FRAME_COUNT - 1, Math.max(0, Math.round(p * (FRAME_COUNT - 1))));
+      const img = (frames[idx] && frames[idx].complete && frames[idx].naturalWidth)
+        ? frames[idx] : nearestLoaded(idx);
+      if (img) drawCover(img);
       heroTag.classList.toggle('show', p >= TAG_SHOW_AT);
-
-      // Nav color flip — when past the entire pinned section.
       navEl.classList.toggle('scrolled', p >= 0.999);
     }
 
@@ -1491,73 +1455,45 @@
     function onScroll() {
       if (rafPending) return;
       rafPending = true;
-      requestAnimationFrame(() => {
-        applyProgress();
-        rafPending = false;
-      });
+      requestAnimationFrame(() => { render(); rafPending = false; });
     }
-
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    applyProgress();
+    window.addEventListener('resize', () => { sizeCanvas(); render(); });
 
-    // If the video can't load, keep the static fallback visible.
-    heroVideo.addEventListener('error', () => {
-      heroVideo.style.display = 'none';
-      dismissLoader(); // don't trap the user behind a stuck loader
-    });
+    // Preload every frame; paint frame 1 the moment it lands.
+    (function preload() {
+      for (let i = 0; i < FRAME_COUNT; i++) {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = function () { framesReady++; if (i === 0) { sizeCanvas(); render(); } };
+        img.onerror = function () { framesReady++; };
+        img.src = frameUrl(i + 1);
+        frames[i] = img;
+      }
+    })();
 
-    // ---------- loader gate logic ----------
-    function isFullyBuffered() {
-      // Mobile: no video to wait on, gate is ready as soon as min-dwell passes.
-      if (IS_MOBILE_HERO) return true;
-      if (!heroVideo.duration || !isFinite(heroVideo.duration)) return false;
-      if (heroVideo.buffered.length === 0) return false;
-      const end = heroVideo.buffered.end(heroVideo.buffered.length - 1);
-      return end >= heroVideo.duration - 0.12;
-    }
+    // ---------- loader gate ----------
     let loaderDismissed = false;
     function dismissLoader() {
       if (loaderDismissed) return;
       loaderDismissed = true;
-      // Desktop: force the first frame to paint before revealing the hero.
-      // iOS Safari refuses to render a paused video element until it's been
-      // played at least once. Skipped on mobile (no video).
-      if (!IS_MOBILE_HERO) {
-        try {
-          const p = heroVideo.play();
-          if (p && typeof p.then === 'function') {
-            p.then(() => heroVideo.pause()).catch(() => {});
-          } else {
-            heroVideo.pause();
-          }
-        } catch (e) { /* noop — poster will still show */ }
-      }
+      sizeCanvas(); render();
       loader.classList.add('hide');
       document.body.classList.remove('locked');
       setTimeout(() => loader.remove(), 900);
     }
     function maybeFinishLoader() {
       const elapsed = Date.now() - loaderStart;
-      if (isFullyBuffered() || elapsed >= LOADER_MAX_MS) {
-        const wait = Math.max(0, LOADER_MIN_MS - elapsed);
-        setTimeout(dismissLoader, wait);
-        return;
-      }
-      setTimeout(maybeFinishLoader, 120);
+      // Start once ~half the frames are in (enough to scrub cleanly from the top
+      // while the tail streams in) and the min dwell has passed. Hard cap 8s.
+      const enough = framesReady >= Math.ceil(FRAME_COUNT * 0.5);
+      if ((enough && elapsed >= LOADER_MIN_MS) || elapsed >= 8000) { dismissLoader(); return; }
+      setTimeout(maybeFinishLoader, 100);
     }
-    heroVideo.addEventListener('progress',       maybeFinishLoader);
-    heroVideo.addEventListener('loadeddata',     maybeFinishLoader);
-    heroVideo.addEventListener('canplaythrough', maybeFinishLoader);
-    // Kick once in case the video was instantly cached.
-    setTimeout(maybeFinishLoader, 200);
 
-    // While the loader is up, freeze scroll-scrub state so it doesn't try
-    // to seek into unbuffered video.
-    const _origOnScroll = onScroll;
-    function gatedOnScroll() { if (!loaderDismissed) return; _origOnScroll(); }
-    window.removeEventListener('scroll', onScroll);
-    window.addEventListener('scroll', gatedOnScroll, { passive: true });
+    sizeCanvas();
+    render();
+    setTimeout(maybeFinishLoader, 120);
 
     const form      = document.getElementById('intake-form');
     const submitBtn = document.getElementById('submit-btn');
