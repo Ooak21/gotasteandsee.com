@@ -188,20 +188,37 @@
       object-fit: cover;
       object-position: center 45%;
       display: block;
-      background: #050609;
+      z-index: 1;            /* canvas above the starfield; its letterbox is transparent */
     }
     /* Static-image fallback if the video fails to load or is disabled */
-    .hero-bg-fallback {
+    /* Starfield behind the canvas — fills the letterbox the scaled-down hero
+       leaves, so the bands read as deep space instead of dead black. */
+    .hero-stars {
       position: absolute; inset: 0;
-      background-image: url('./hero-mobile-static.jpg');
-      background-size: cover;
-      background-position: center 45%;
-      background-repeat: no-repeat;
       z-index: 0;
+      background-color: #050609;
+      background-image:
+        radial-gradient(1.6px 1.6px at 18% 22%, #fff, transparent 60%),
+        radial-gradient(1.2px 1.2px at 64% 38%, rgba(255,255,255,.85), transparent 60%),
+        radial-gradient(1.6px 1.6px at 82% 72%, #fff, transparent 60%),
+        radial-gradient(1.1px 1.1px at 38% 84%, rgba(255,255,255,.7), transparent 60%),
+        radial-gradient(1px 1px at 8% 60%, rgba(255,255,255,.6), transparent 60%),
+        radial-gradient(1.3px 1.3px at 92% 16%, #fff, transparent 60%),
+        radial-gradient(1px 1px at 50% 66%, rgba(255,255,255,.5), transparent 60%),
+        radial-gradient(1px 1px at 30% 48%, rgba(255,255,255,.55), transparent 60%);
+      background-size: 170px 170px;
+      background-repeat: repeat;
+    }
+    .hero-stars::after {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(60% 40% at 30% 18%, rgba(23,137,219,.10), transparent 70%),
+        radial-gradient(55% 40% at 82% 82%, rgba(184,209,56,.06), transparent 70%);
     }
     /* very gentle vignette so the bottom edge and the tag have something to read against */
     .hero-vignette {
       position: absolute; inset: 0;
+      z-index: 2;
       background:
         radial-gradient(ellipse 90% 70% at 50% 45%, transparent 50%, rgba(0,0,0,.35) 100%);
       pointer-events: none;
@@ -218,10 +235,48 @@
       color: var(--cream);
       text-shadow: 0 2px 14px rgba(0,0,0,.65), 0 1px 3px rgba(0,0,0,.45);
       white-space: nowrap;
-      z-index: 2;
+      z-index: 3;
       opacity: 0;
       transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1);
       pointer-events: none;
+    }
+    /* Marquee ticker sitting in the bottom letterbox band. */
+    .hero-ticker {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      z-index: 4;
+      height: clamp(46px, 11vh, 92px);
+      display: flex; align-items: center;
+      overflow: hidden;
+      pointer-events: none;
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+              mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    }
+    .hero-ticker-track {
+      display: flex; flex-shrink: 0;
+      white-space: nowrap;
+      will-change: transform;
+      animation: ticker-scroll 22s linear infinite;
+    }
+    .hero-ticker-track span {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 800;
+      font-size: clamp(12px, 3.2vw, 17px);
+      letter-spacing: .26em;
+      text-transform: uppercase;
+      color: var(--cream);
+      opacity: .82;
+      padding-right: 22px;
+    }
+    .hero-ticker-track span::before {
+      content: '\2726';            /* ✦ */
+      color: var(--lime);
+      opacity: .9;
+      margin-right: 22px;
+    }
+    @keyframes ticker-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
     }
     .hero-tag.show {
       opacity: 1;
@@ -1037,13 +1092,18 @@
 
   <section id="top" class="hero">
     <div class="hero-sticky">
-      <div class="hero-bg-fallback" aria-hidden="true"></div>
+      <div class="hero-stars" aria-hidden="true"></div>
       <canvas
         class="hero-bg"
         id="hero-canvas"
         aria-label="Go Taste and See — Earth crowned with skyscrapers and cutlery, a plane in orbit, against deep space."></canvas>
       <div class="hero-vignette"></div>
       <div class="hero-tag" id="hero-tag">try it. you might like it.</div>
+      <div class="hero-ticker" aria-hidden="true">
+        <div class="hero-ticker-track">
+          <span>Las Vegas Food Vlogger</span><span>Las Vegas Food Vlogger</span><span>Las Vegas Food Vlogger</span><span>Las Vegas Food Vlogger</span><span>Las Vegas Food Vlogger</span><span>Las Vegas Food Vlogger</span><span>Las Vegas Food Vlogger</span><span>Las Vegas Food Vlogger</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1462,8 +1522,7 @@
       const a = loaded(i) || nearestLoaded(i);
       const b = loaded(Math.min(FRAME_COUNT - 1, i + 1));
       ctx.globalAlpha = 1;
-      ctx.fillStyle = '#050609';                   // fill any letterbox with the hero's near-black
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);   // transparent letterbox → starfield shows behind
       if (a) drawCover(a, 1);
       if (b && frac > 0.001) drawCover(b, frac);   // ease into the next frame
       heroTag.classList.toggle('show', p >= TAG_SHOW_AT);
