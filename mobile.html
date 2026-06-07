@@ -889,29 +889,31 @@
 
     /* Send button on the left, small Jennifer card filling the void on the right */
     .submit-row {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; align-items: center;
       gap: 16px; flex-wrap: nowrap;
     }
     .hello-card-mini {
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
       text-align: center; flex: 0 0 auto;
-      padding: 10px 14px;
+      margin: 0 auto;                 /* center in the void to the right of Send */
+      padding: 18px 26px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 14px;
+      border-radius: 18px;
     }
     .hello-card-mini img {
-      width: 54px; height: 54px; border-radius: 50%;
+      width: clamp(84px, 26vw, 112px); height: clamp(84px, 26vw, 112px);
+      border-radius: 50%;
       object-fit: cover; display: block;
       border: 2px solid rgba(255,255,255,0.14);
     }
     .hello-card-mini .name {
       font-family: 'Fraunces', Georgia, serif;
-      font-size: 13px; line-height: 1; color: var(--cream);
+      font-size: 17px; line-height: 1; color: var(--cream);
     }
     .hello-card-mini .role {
       font-family: 'Inter', system-ui, sans-serif;
-      font-size: 8px; font-weight: 700; letter-spacing: .16em;
+      font-size: 9px; font-weight: 700; letter-spacing: .16em;
       text-transform: uppercase; color: var(--lime);
     }
 
