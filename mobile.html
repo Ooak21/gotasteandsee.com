@@ -1413,14 +1413,17 @@
     }
 
     // object-fit: cover math (portrait phone crops the wide sides; logo stays centered).
-    function drawCover(img) {
+    // alpha lets us crossfade the next frame over the current one for sub-frame smoothness.
+    function drawCover(img, alpha) {
       if (!img || !img.naturalWidth) return;
+      ctx.globalAlpha = (alpha == null) ? 1 : alpha;
       const cw = canvas.width, ch = canvas.height;
       const ir = img.naturalWidth / img.naturalHeight, cr = cw / ch;
       let dw, dh, dx, dy;
       if (cr > ir) { dw = cw; dh = cw / ir; dx = 0; dy = (ch - dh) * 0.45; }
       else         { dh = ch; dw = ch * ir; dy = 0; dx = (cw - dw) / 2; }
       ctx.drawImage(img, dx, dy, dw, dh);
+      ctx.globalAlpha = 1;
     }
 
     // If the exact frame isn't decoded yet, draw the nearest one that is, so the
@@ -1441,31 +1444,46 @@
       return total > 0 ? Math.max(0, Math.min(1, traveled / total)) : 0;
     }
 
-    function render() {
-      const p = getProgress();
-      const idx = Math.min(FRAME_COUNT - 1, Math.max(0, Math.round(p * (FRAME_COUNT - 1))));
-      const img = (frames[idx] && frames[idx].complete && frames[idx].naturalWidth)
-        ? frames[idx] : nearestLoaded(idx);
-      if (img) drawCover(img);
+    function loaded(idx) {
+      const f = frames[idx];
+      return (f && f.complete && f.naturalWidth) ? f : null;
+    }
+
+    // Draw at a continuous progress p (0..1) by crossfading frame i into i+1 by
+    // the fractional part — turns 60 discrete steps into a continuous reveal.
+    function drawAt(p) {
+      const exact = Math.max(0, Math.min(FRAME_COUNT - 1, p * (FRAME_COUNT - 1)));
+      const i = Math.floor(exact);
+      const frac = exact - i;
+      const a = loaded(i) || nearestLoaded(i);
+      const b = loaded(Math.min(FRAME_COUNT - 1, i + 1));
+      if (a) drawCover(a, 1);
+      if (b && frac > 0.001) drawCover(b, frac);   // ease into the next frame
       heroTag.classList.toggle('show', p >= TAG_SHOW_AT);
       navEl.classList.toggle('scrolled', p >= 0.999);
     }
 
-    let rafPending = false;
-    function onScroll() {
-      if (rafPending) return;
-      rafPending = true;
-      requestAnimationFrame(() => { render(); rafPending = false; });
+    // Ease the displayed progress toward the scroll target (journey's smoothT
+    // trick) so motion is buttery instead of snapping with each scroll tick.
+    let targetP = 0, viewP = 0, looping = false;
+    function loop() {
+      viewP += (targetP - viewP) * 0.16;
+      if (Math.abs(targetP - viewP) < 0.0006) { viewP = targetP; looping = false; drawAt(viewP); return; }
+      drawAt(viewP);
+      requestAnimationFrame(loop);
     }
+    function kick() { if (!looping) { looping = true; requestAnimationFrame(loop); } }
+
+    function onScroll() { targetP = getProgress(); kick(); }
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', () => { sizeCanvas(); render(); });
+    window.addEventListener('resize', () => { sizeCanvas(); drawAt(viewP); });
 
     // Preload every frame; paint frame 1 the moment it lands.
     (function preload() {
       for (let i = 0; i < FRAME_COUNT; i++) {
         const img = new Image();
         img.decoding = 'async';
-        img.onload = function () { framesReady++; if (i === 0) { sizeCanvas(); render(); } };
+        img.onload = function () { framesReady++; if (i === 0) { sizeCanvas(); drawAt(viewP); } };
         img.onerror = function () { framesReady++; };
         img.src = frameUrl(i + 1);
         frames[i] = img;
@@ -1477,7 +1495,7 @@
     function dismissLoader() {
       if (loaderDismissed) return;
       loaderDismissed = true;
-      sizeCanvas(); render();
+      sizeCanvas(); targetP = viewP = getProgress(); drawAt(viewP);
       loader.classList.add('hide');
       document.body.classList.remove('locked');
       setTimeout(() => loader.remove(), 900);
@@ -1492,7 +1510,7 @@
     }
 
     sizeCanvas();
-    render();
+    drawAt(0);
     setTimeout(maybeFinishLoader, 120);
 
     const form      = document.getElementById('intake-form');
