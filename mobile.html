@@ -701,10 +701,10 @@
       padding: 100px 8vw 140px;
       background-color: #000;
       background-image:
-        linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.28)),
-        url('./jennifer-bottom.png');
+        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+        url('./channel-bg-passport.jpg?v=1');
       background-size: cover;
-      background-position: center center;
+      background-position: left center;
       background-repeat: no-repeat;
     }
     .channel-inner {
@@ -932,10 +932,10 @@
         background-position: center;
         background-repeat: no-repeat;
       }
-      /* Intake bg image was designed for desktop two-column layout — on
-         a portrait phone it crops to empty center. Drop to plain black. */
+      /* Contact section background: Jennifer's portrait (portrait-aspect, fills
+         the phone cleanly — the old intake-bg was desktop-only and cropped). */
       .hello {
-        background: #000 !important;
+        background: #000 url('./jennifer-bottom.png') center center / cover no-repeat !important;
       }
       .hero-scroll { display: none; }
       /* Phone sizing for the tag; visibility is driven by the scrub (.show
