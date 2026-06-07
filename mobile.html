@@ -887,6 +887,34 @@
     }
     .form-error.show { display: block; }
 
+    /* Send button on the left, small Jennifer card filling the void on the right */
+    .submit-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: nowrap;
+    }
+    .hello-card-mini {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      text-align: center; flex: 0 0 auto;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+    }
+    .hello-card-mini img {
+      width: 54px; height: 54px; border-radius: 50%;
+      object-fit: cover; display: block;
+      border: 2px solid rgba(255,255,255,0.14);
+    }
+    .hello-card-mini .name {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 13px; line-height: 1; color: var(--cream);
+    }
+    .hello-card-mini .role {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 8px; font-weight: 700; letter-spacing: .16em;
+      text-transform: uppercase; color: var(--lime);
+    }
+
     .thanks {
       display: none;
       font-family: 'Fraunces', Georgia, serif;
@@ -1283,7 +1311,14 @@
             <textarea id="message" name="message" rows="4" required></textarea>
           </div>
           <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
-          <button class="submit" type="submit" id="submit-btn">Send</button>
+          <div class="submit-row">
+            <button class="submit" type="submit" id="submit-btn">Send</button>
+            <div class="hello-card-mini" aria-hidden="true">
+              <img src="./jennifer-avatar.png" alt="Jennifer Allen" />
+              <span class="name">Jennifer</span>
+              <span class="role">Go Taste and See</span>
+            </div>
+          </div>
           <div class="form-error" id="form-error"></div>
         </form>
 
