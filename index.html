@@ -735,8 +735,16 @@
 
     /* ---------- say hello ---------- */
     .hello {
-      background: #000 url('./intake-bg.png?v=2') center center / cover no-repeat;
+      background: #000;
       padding: 100px 8vw 110px;
+    }
+    .hello-portrait {
+      display: block;
+      width: clamp(120px, 11vw, 160px);
+      height: clamp(120px, 11vw, 160px);
+      border-radius: 50%;
+      object-fit: cover;
+      margin-top: 40px;
     }
     .hello-inner {
       max-width: 1100px; margin: 0 auto;
@@ -1217,6 +1225,7 @@
       <div class="hello-left">
         <h2>Write me <em>a note.</em></h2>
         <p class="lede">Brands, restaurants, travel boards, fellow curious eaters. I read every one of these myself.</p>
+        <img class="hello-portrait" src="./jennifer-avatar.png" alt="Jennifer Allen" />
       </div>
 
       <div class="hello-right">
